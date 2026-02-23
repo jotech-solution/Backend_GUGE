@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des Écoles - Guge{% endblock %}
+
+{% block content %}
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Gestion des Écoles</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+          <li class="breadcrumb-item" aria-current="page">Écoles</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>Liste des Écoles</h5>
+        <div>
+          <a href="{% url 'school_add' %}" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> École</a>
+          <a href="{% url 'province_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Province</a>
+          <a href="{% url 'division_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Division</a>
+          <a href="{% url 'subdivision_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Sous-Division</a>
+          <a href="{% url 'city_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Ville</a>
+          <a href="{% url 'territory_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Territoire</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Code Adm.</th>
+                <th>Nom de l'École</th>
+                <th>Province</th>
+                <th>Division</th>
+                <th>Chef d'Établissement</th>
+                <th>Régime de Gestion</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for school in schools %}
+              <tr>
+                <td>{{ school.adm_code }}</td>
+                <td>{{ school.name }}</td>
+                <td>{{ school.province.name }}</td>
+                <td>{{ school.division.name }}</td>
+                <td>{{ school.head_name }}</td>
+                <td>{{ school.get_management_regime_display }}</td>
+                <td>
+                  <a href="#!" class="avtar avtar-xs btn-link-secondary"><i class="ti ti-eye"></i></a>
+                  <a href="#!" class="avtar avtar-xs btn-link-secondary"><i class="ti ti-edit"></i></a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center">Aucune école enregistrée pour le moment.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}

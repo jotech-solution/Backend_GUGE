@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Questions - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Gestion des Questions</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'question_template_list' %}">Questionnaires</a></li>
+                    <li class="breadcrumb-item">Questions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Formulaire d'ajout -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Ajouter une Question</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Questionnaire</label>
+                        <select name="template" class="form-select" required>
+                            <option value="">Sélectionner un questionnaire</option>
+                            {% for template in templates %}
+                            <option value="{{ template.id }}">{{ template.name }} ({{ template.get_type_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Texte de la Question</label>
+                        <textarea name="text" class="form-control" rows="3" placeholder="Entrez votre question ici..." required></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Type de réponse</label>
+                        <select name="kind" class="form-select" required>
+                            <option value="">Sélectionner un type</option>
+                            {% for val, label in kind_choices %}
+                            <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="options-group" style="display: none;">
+                        <label class="form-label">Options (séparées par des virgules)</label>
+                        <input type="text" name="options" class="form-control" placeholder="Option 1, Option 2, Option 3">
+                        <small class="text-muted">Uniquement pour le type 'Choix'</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des questions -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Liste des Questions</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Questionnaire</th>
+                                <th>Question</th>
+                                <th>Type</th>
+                                <th>Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for question in questions %}
+                            <tr>
+                                <td>{{ question.template.name }}</td>
+                                <td>{{ question.text|truncatechars:50 }}</td>
+                                <td><span class="badge bg-light-secondary text-secondary">{{ question.get_kind_display }}</span></td>
+                                <td>
+                                    {% if question.kind == 'choice' %}
+                                        <small>{{ question.options|join:", " }}</small>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">Aucune question enregistrée.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const kindSelect = document.querySelector('select[name="kind"]');
+        const optionsGroup = document.getElementById('options-group');
+
+        kindSelect.addEventListener('change', function() {
+            if (this.value === 'choice') {
+                optionsGroup.style.display = 'block';
+            } else {
+                optionsGroup.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

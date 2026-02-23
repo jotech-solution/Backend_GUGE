@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Provinces - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Gestion des Provinces</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+                    <li class="breadcrumb-item">Provinces</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Formulaire d'ajout -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Ajouter une Province</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" class="form-control" placeholder="Ex: LUALABA" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nom</label>
+                        <input type="text" name="name" class="form-control" placeholder="Ex: Lualaba" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Chef-lieu</label>
+                        <input type="text" name="principal_town" class="form-control" placeholder="Ex: Kolwezi">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Superficie</label>
+                        <input type="text" name="surface" class="form-control" placeholder="Ex: 132 425">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Population</label>
+                        <input type="text" name="population" class="form-control" placeholder="Ex: 2 570 000">
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Latitude</label>
+                                <input type="number" step="any" name="latitude" class="form-control" placeholder="Ex: -10.71">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Longitude</label>
+                                <input type="number" step="any" name="longitude" class="form-control" placeholder="Ex: 25.46">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des provinces -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Liste des Provinces</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom</th>
+                                <th>Chef-lieu</th>
+                                <th>Superficie</th>
+                                <th>Population</th>
+                                <th>Coordonnées</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for province in provinces %}
+                            <tr>
+                                <td>{{ province.code }}</td>
+                                <td>{{ province.name }}</td>
+                                <td>{{ province.principal_town|default:"-" }}</td>
+                                <td>{{ province.surface|default:"-" }} km²</td>
+                                <td>{{ province.population|default:"-" }}</td>
+                                <td>
+                                    {% if province.latitude %}
+                                    <small>{{ province.latitude }}, {{ province.longitude }}</small>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucune province enregistrée.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - Guge{% endblock %}
+
+{% block content %}
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Accueil</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Tableau de bord</a></li>
+          <li class="breadcrumb-item" aria-current="page">Accueil</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5>Bienvenue sur Guge</h5>
+      </div>
+      <div class="card-body">
+        <p>Guge est votre plateforme centralisée pour l'enregistrement et la gestion des données des écoles à travers tout le pays.</p>
+        <p>Utilisez le menu à gauche pour naviguer entre les différentes sections :</p>
+        <ul>
+          <li><strong>Tableau de bord :</strong> Vue d'ensemble des statistiques nationales.</li>
+          <li><strong>Écoles :</strong> Gérer la liste des établissements scolaires.</li>
+          <li><strong>Questionnaires :</strong> Administrer les questions posées aux écoles.</li>
+        </ul>
+        <div class="mt-4">
+          <a href="#!" class="btn btn-primary">Commencer l'enregistrement</a>
+          <a href="#!" class="btn btn-outline-secondary">Voir les rapports</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">Total Écoles</h6>
+        <h4 class="mb-3">0 <span class="badge bg-light-primary border border-primary"><i class="ti ti-trending-up"></i> 0%</span></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">Réponses reçues</h6>
+        <h4 class="mb-3">0 <span class="badge bg-light-success border border-success"><i class="ti ti-trending-up"></i> 0%</span></h4>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}

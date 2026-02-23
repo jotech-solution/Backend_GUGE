@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une École - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Ajouter une École</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'school_list' %}">Écoles</a></li>
+          <li class="breadcrumb-item">Nouveau</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5>Informations de l'École</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom de l'École</label>
+              <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Adresse</label>
+              <input type="text" name="address" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Chef d'Établissement</label>
+              <input type="text" name="head_name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Téléphone du Chef</label>
+              <input type="text" name="head_phone" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Province</label>
+              <select name="province" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for p in provinces %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Division</label>
+              <select name="division" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for d in divisions %}
+                <option value="{{ d.id }}">{{ d.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sous-Division</label>
+              <select name="sub_division" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for sd in sub_divisions %}
+                <option value="{{ sd.id }}">{{ sd.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Ville</label>
+              <select name="city" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for c in cities %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Territoire</label>
+              <select name="territory" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for t in territories %}
+                <option value="{{ t.id }}">{{ t.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Village (optionnel)</label>
+              <input type="text" name="village" class="form-control">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Code Administratif</label>
+              <input type="text" name="adm_code" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Référence Légale</label>
+              <input type="text" name="legal_reference" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Numéro SECOPE</label>
+              <input type="text" name="secope_number" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Régime de gestion</label>
+              <select name="management_regime" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for k, v in management_choices %}
+                <option value="{{ k }}">{{ v }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Statut de Mécanisation</label>
+              <select name="mechanized_status" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for k, v in mechanized_choices %}
+                <option value="{{ k }}">{{ v }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Statut de Propriété</label>
+              <select name="ownership_status" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for k, v in ownership_choices %}
+                <option value="{{ k }}">{{ v }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Milieu</label>
+              <select name="environment" class="form-select" required>
+                <option value="">Sélectionner</option>
+                {% for k, v in environment_choices %}
+                <option value="{{ k }}">{{ v }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label">Centre de Regroupement (optionnel)</label>
+              <input type="text" name="regroupment_center" class="form-control">
+            </div>
+          </div>
+          <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{% url 'school_list' %}" class="btn btn-light">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
