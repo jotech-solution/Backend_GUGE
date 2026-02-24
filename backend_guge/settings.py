@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7fp2w&+pvlxlx!xv_(sm$a%_@!95kuwh+kgf4bq#*&31g3w**f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '192.168.1.26', '127.0.0.1']
 
 
 # Application definition
@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'guge_app',
     "django_filters",
     "rest_framework",
+    "drf_yasg",
+
 ]
 
 REST_FRAMEWORK = {

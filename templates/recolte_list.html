@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Guge{% endblock %}
+
+{% block content %}
+<!-- [ breadcrumb ] start -->
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">{{ title }}</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+          <li class="breadcrumb-item">Fiches de Récolte</li>
+          <li class="breadcrumb-item" aria-current="page">{{ title }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ breadcrumb ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header">
+        <h5>{{ title }}</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>École</th>
+                <th>Collecteur</th>
+                <th>Province / Division</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for recolte in recoltes %}
+              <tr>
+                <td>{{ recolte.date|date:"d/m/Y" }}</td>
+                <td>{{ recolte.establishment.name }}</td>
+                <td>{{ recolte.collector_name }}</td>
+                <td>
+                    <small>{{ recolte.establishment.province.name }}</small><br>
+                    <small class="text-muted">{{ recolte.establishment.division.name }}</small>
+                </td>
+                <td>
+                    {% if recolte.status == 'valide' %}
+                        <span class="badge bg-success">Validé</span>
+                    {% elif recolte.status == 'rejete' %}
+                        <span class="badge bg-danger">Rejeté</span>
+                    {% else %}
+                        <span class="badge bg-warning">En attente</span>
+                    {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    {% if recolte.status == 'en_attente' %}
+                        <a href="{% url 'recolte_validate' recolte.pk %}" class="btn btn-success" title="Valider">
+                            <i class="ti ti-check"></i>
+                        </a>
+                        <a href="{% url 'recolte_reject' recolte.pk %}" class="btn btn-danger" title="Rejeter">
+                            <i class="ti ti-x"></i>
+                        </a>
+                    {% endif %}
+                    <button type="button" class="btn btn-light" title="Voir détails">
+                        <i class="ti ti-eye"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center">Aucune fiche de récolte trouvée pour ce type.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% include 'includes/pagination.html' with page_obj=recoltes %}
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}
