@@ -16,7 +16,7 @@ class Province(models.Model):
 
 class Division(models.Model):
     province = models.ForeignKey(Province, on_delete=models.RESTRICT, related_name="divisions")
-    code = models.CharField(max_length=255, unique=True)
+    code = models.CharField(max_length=255, unique=True, null=True, blank=True)
     name = models.CharField(max_length=255)
 
     created_at = models.DateTimeField(null=True, blank=True)
@@ -109,8 +109,8 @@ class School(models.Model):
     head_phone = models.CharField(max_length=255)
 
     province = models.ForeignKey(Province, on_delete=models.RESTRICT)
-    city = models.ForeignKey(City, on_delete=models.RESTRICT)
-    territory = models.ForeignKey(Territory, on_delete=models.RESTRICT)
+    city = models.ForeignKey(City, on_delete=models.RESTRICT, null=True, blank=True)
+    territory = models.ForeignKey(Territory, on_delete=models.RESTRICT, null=True, blank=True)
     division = models.ForeignKey(Division, on_delete=models.RESTRICT)
     sub_division = models.ForeignKey(SubDivision, on_delete=models.RESTRICT)
 
@@ -139,7 +139,7 @@ class QuestionTemplate(models.Model):
 
     TYPE_CHOICES = [
         ('pre-scolaire', 'Pré-scolaire'),
-        ('primaire', 'preimaire'),
+        ('primaire', 'Primaire'),
         ('secondaire', 'Secondaire'),
     ]
 
@@ -182,3 +182,43 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text
+
+class Recolte(models.Model):
+
+    TYPE_CHOICES = [
+        ('pre-scolaire', 'Pré-scolaire'),
+        ('primaire', 'Primaire'),
+        ('secondaire', 'Secondaire'),
+    ]
+
+    STATUS_CHOICES = [
+        ('en_attente', 'En attente'),
+        ('valide', 'Validé'),
+        ('rejete', 'Rejeté'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    establishment = models.ForeignKey(
+        "School",
+        on_delete=models.CASCADE,
+        related_name="recoltes"
+    )
+
+    date = models.DateTimeField()
+
+    collector_name = models.CharField(max_length=255)
+    notes = models.TextField(blank=True)
+
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+
+    # questionId -> answer
+    answers = models.JSONField(default=dict, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='en_attente')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Récolte - {self.establishment.name} - {self.date.date()} ({self.get_status_display()})"

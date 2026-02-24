@@ -78,8 +78,8 @@
             </div>
 
             <div class="col-md-6">
-              <label class="form-label">Ville</label>
-              <select name="city" class="form-select" required>
+              <label class="form-label">Ville (Optionnel si territoire est requis)</label>
+              <select name="city" class="form-select">
                 <option value="">Sélectionner</option>
                 {% for c in cities %}
                 <option value="{{ c.id }}">{{ c.name }}</option>
@@ -87,8 +87,8 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Territoire</label>
-              <select name="territory" class="form-select" required>
+              <label class="form-label">Territoire (Optionnel si la ville est requise)</label>
+              <select name="territory" class="form-select">
                 <option value="">Sélectionner</option>
                 {% for t in territories %}
                 <option value="{{ t.id }}">{{ t.name }}</option>

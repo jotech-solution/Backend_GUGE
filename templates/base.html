@@ -13,6 +13,7 @@
   <meta name="author" content="Guge">
 
   <!-- [Favicon] icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/x-icon">
   <!-- [Google Font] Family -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
@@ -77,16 +78,24 @@
               <span class="pc-mtext">Questionnaires</span>
             </a>
           </li>
-          <li class="pc-item">
+            <li class="pc-item pc-hasmenu">
+                <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-clipboard-list"></i></span><span class="pc-mtext">Fiches de Recolte</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                <ul class="pc-submenu">
+                    <li class="pc-item"><a class="pc-link" href="{% url 'recolte_list' 'pre-scolaire' %}">Pre-Scolaire</a></li>
+                    <li class="pc-item"><a class="pc-link" href="{% url 'recolte_list' 'primaire' %}">Primaire</a></li>
+                    <li class="pc-item"><a class="pc-link" href="{% url 'recolte_list' 'secondaire' %}">Secondaire</a></li>
+                </ul>
+            </li>
+            <li class="pc-item">
             <a href="#!" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-clipboard-list"></i></span>
-              <span class="pc-mtext">Fiches</span>
+              <span class="pc-micon"><i class="ti ti-chart-infographic"></i></span>
+              <span class="pc-mtext">Statistiques</span>
             </a>
           </li>
             <li class="pc-item">
             <a href="#!" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-clipboard-list"></i></span>
-              <span class="pc-mtext">Statistiques</span>
+              <span class="pc-micon"><i class="ti ti-file-invoice"></i></span>
+              <span class="pc-mtext">Rapport</span>
             </a>
           </li>
 
@@ -100,6 +109,14 @@
               <span class="pc-mtext">Profil</span>
             </a>
           </li>
+
+            <li class="pc-item pc-hasmenu">
+                <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-users"></i></span><span class="pc-mtext">Gestion des utilisateurs</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+                <ul class="pc-submenu">
+                    <li class="pc-item"><a class="pc-link" href="#!">Utilisateurs</a></li>
+                    <li class="pc-item"><a class="pc-link" href="#!">Groupes</a></li>
+                </ul>
+            </li>
         </ul>
       </div>
     </div>
@@ -137,7 +154,7 @@
             <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button"
               aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
               <img src="{% static 'images/user/avatar-2.jpg' %}" alt="user-image" class="user-avtar">
-              <span>Administrateur</span>
+              <span>{{ user.username }}</span>
             </a>
             <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
               <div class="dropdown-header">
@@ -146,7 +163,7 @@
                     <img src="{% static 'images/user/avatar-2.jpg' %}" alt="user-image" class="user-avtar wid-35">
                   </div>
                   <div class="flex-grow-1 ms-3">
-                    <h6 class="mb-1">Administrateur</h6>
+                    <h6 class="mb-1">{{ user.username }}</h6>
                     <span>Admin Principal</span>
                   </div>
                 </div>
@@ -156,7 +173,7 @@
                 <i class="ti ti-user"></i>
                 <span>Mon Profil</span>
               </a>
-              <a href="#!" class="dropdown-item">
+              <a href="{% url 'logout' %}" class="dropdown-item">
                 <i class="ti ti-power"></i>
                 <span>Déconnexion</span>
               </a>

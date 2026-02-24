@@ -20,12 +20,23 @@ from django.urls import include, path
 from backend_guge import settings
 from guge_app.views import home
 from django.conf.urls.static import static
+from guge_app import views
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
     path('manage_guge/', include('guge_app.urls')),
-    # path('users/', include('mng_users.urls')),
+    path('users/', include('mng_users.urls')),
+    # APIS
+    path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create'}), name='school_api_list'),
+    path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
+    # TOKENS
+    path("api/token/", TokenObtainPairView.as_view()),
+    path("api/token/refresh/", TokenRefreshView.as_view()),
 ]
 
 # Servir les fichiers médias en développement

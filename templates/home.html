@@ -24,6 +24,39 @@
 
 <!-- [ Main Content ] start -->
 <div class="row">
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">Total Écoles</h6>
+        <h4 class="mb-3">{{ nbr_school }} <span class="badge bg-light-primary border border-primary"><i class="ti ti-trending-up"></i> 0%</span></h4>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">Total Fiches de recolte</h6>
+        <h4 class="mb-3">{{ nbr_recolte }} <span class="badge bg-light-success border border-success"><i class="ti ti-trending-up"></i> 0%</span></h4>
+      </div>
+    </div>
+  </div>
+    <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">Total Divisions</h6>
+        <h4 class="mb-3">{{ nbr_divisions }} <span class="badge bg-light-danger border border-danger"><i class="ti ti-trending-up"></i> 3%</span></h4>
+      </div>
+    </div>
+  </div>
+    <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="mb-2 f-w-400 text-muted">Total Utilisateurs</h6>
+        <h4 class="mb-3">{{ nbr_users }} <span class="badge bg-light-warning border border-warning"><i class="ti ti-trending-up"></i> 45%</span></h4>
+      </div>
+    </div>
+  </div>
+
   <div class="col-md-12">
     <div class="card">
       <div class="card-header">
@@ -39,28 +72,12 @@
         </ul>
         <div class="mt-4">
           <a href="#!" class="btn btn-primary">Commencer l'enregistrement</a>
-          <a href="#!" class="btn btn-outline-secondary">Voir les rapports</a>
+          <a href="#!" class="btn btn-outline-secondary">Voir les statistiques</a>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <h6 class="mb-2 f-w-400 text-muted">Total Écoles</h6>
-        <h4 class="mb-3">0 <span class="badge bg-light-primary border border-primary"><i class="ti ti-trending-up"></i> 0%</span></h4>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <h6 class="mb-2 f-w-400 text-muted">Réponses reçues</h6>
-        <h4 class="mb-3">0 <span class="badge bg-light-success border border-success"><i class="ti ti-trending-up"></i> 0%</span></h4>
-      </div>
-    </div>
-  </div>
 </div>
 <!-- [ Main Content ] end -->
 {% endblock %}

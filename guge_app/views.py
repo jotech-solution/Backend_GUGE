@@ -1,16 +1,79 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import School, Province, Division, SubDivision, City, Territory, QuestionTemplate, Question
+from .models import School, Province, Division, SubDivision, City, Territory, QuestionTemplate, Question, Recolte
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.contrib.auth.models import User
+from .serializers import SchoolSerializer, QuestionTemplateSerializer
+from .filters import SchoolFilter
+from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+# APIS
+class QuestionTemplateViewSet(viewsets.ReadOnlyModelViewSet):
+
+    queryset = QuestionTemplate.objects.prefetch_related("questions").all()
+    serializer_class = QuestionTemplateSerializer
+
+    filterset_fields = ["type"]   # pour filtrer par type
+
+class SchoolViewSet(viewsets.ModelViewSet):
+
+    queryset = School.objects.select_related(
+        "province",
+        "division",
+        "sub_division",
+        "city",
+        "territory"
+    ).all()
+
+    serializer_class = SchoolSerializer
+    filterset_class = SchoolFilter
+
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+
+    search_fields = [
+        "name",
+        "adm_code",
+        "head_name",
+        "village",
+    ]
+
+    ordering_fields = [
+        "name",
+        "created_at",
+    ]
 
 # Create your views here.
-
+@login_required(login_url='users/login/')
 def home(request):
-    return render(request, 'home.html')
+    divisions = Division.objects.all()
+    nbr_divisions = len(divisions)
+    nbr_users = len(User.objects.all())
+    nbr_recolte =  len(Recolte.objects.all())
+    nbr_school = len(School.objects.all())
+    context = {
+        'divisions': divisions,
+        'nbr_divisions': nbr_divisions,
+        'nbr_users': nbr_users,
+        'nbr_recolte': nbr_recolte,
+        'nbr_school': nbr_school
+    }
+    return render(request, 'home.html', context)
 
+def get_paginated_queryset(request, queryset, count=10):
+    paginator = Paginator(queryset, count)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
+
+@login_required(login_url='users/login/')
 def school_list(request):
-    schools = School.objects.all()
+    schools_qs = School.objects.all().order_by('-created_at')
+    schools = get_paginated_queryset(request, schools_qs)
     return render(request, 'school_list.html', {'schools': schools})
 
+@login_required(login_url='users/login/')
 def school_form(request):
     if request.method == 'POST':
         # Extraction des données du POST
@@ -51,7 +114,7 @@ def school_form(request):
     sub_divisions = SubDivision.objects.all()
     cities = City.objects.all()
     territories = Territory.objects.all()
-    
+
     context = {
         'provinces': provinces,
         'divisions': divisions,
@@ -65,6 +128,7 @@ def school_form(request):
     }
     return render(request, 'school_form.html', context)
 
+@login_required(login_url='users/login/')
 def province_list(request):
     if request.method == 'POST':
         code = request.POST.get('code')
@@ -74,9 +138,9 @@ def province_list(request):
         population = request.POST.get('population')
         latitude = request.POST.get('latitude')
         longitude = request.POST.get('longitude')
-        
+
         Province.objects.create(
-            code=code, 
+            code=code,
             name=name,
             principal_town=principal_town,
             surface=surface,
@@ -86,10 +150,12 @@ def province_list(request):
         )
         messages.success(request, "Province ajoutée avec succès.")
         return redirect('province_list')
-    
-    provinces = Province.objects.all()
+
+    provinces_qs = Province.objects.all().order_by('name')
+    provinces = get_paginated_queryset(request, provinces_qs)
     return render(request, 'province_list.html', {'provinces': provinces})
 
+@login_required(login_url='users/login/')
 def division_list(request):
     if request.method == 'POST':
         province_id = request.POST.get('province')
@@ -98,11 +164,13 @@ def division_list(request):
         Division.objects.create(province_id=province_id, code=code, name=name)
         messages.success(request, "Division ajoutée avec succès.")
         return redirect('division_list')
-    
-    divisions = Division.objects.all()
+
+    divisions_qs = Division.objects.all().order_by('name')
+    divisions = get_paginated_queryset(request, divisions_qs)
     provinces = Province.objects.all()
     return render(request, 'division_list.html', {'divisions': divisions, 'provinces': provinces})
 
+@login_required(login_url='users/login/')
 def subdivision_list(request):
     if request.method == 'POST':
         division_id = request.POST.get('division')
@@ -111,11 +179,13 @@ def subdivision_list(request):
         SubDivision.objects.create(division_id=division_id, code=code, name=name)
         messages.success(request, "Sous-division ajoutée avec succès.")
         return redirect('subdivision_list')
-    
-    subdivisions = SubDivision.objects.all()
+
+    subdivisions_qs = SubDivision.objects.all().order_by('name')
+    subdivisions = get_paginated_queryset(request, subdivisions_qs)
     divisions = Division.objects.all()
     return render(request, 'subdivision_list.html', {'subdivisions': subdivisions, 'divisions': divisions})
 
+@login_required(login_url='users/login/')
 def city_list(request):
     if request.method == 'POST':
         province_id = request.POST.get('province')
@@ -124,11 +194,13 @@ def city_list(request):
         City.objects.create(province_id=province_id, code=code, name=name)
         messages.success(request, "Ville ajoutée avec succès.")
         return redirect('city_list')
-    
-    cities = City.objects.all()
+
+    cities_qs = City.objects.all().order_by('name')
+    cities = get_paginated_queryset(request, cities_qs)
     provinces = Province.objects.all()
     return render(request, 'city_list.html', {'cities': cities, 'provinces': provinces})
 
+@login_required(login_url='users/login/')
 def territory_list(request):
     if request.method == 'POST':
         province_id = request.POST.get('province')
@@ -137,35 +209,39 @@ def territory_list(request):
         Territory.objects.create(province_id=province_id, code=code, name=name)
         messages.success(request, "Territoire ajouté avec succès.")
         return redirect('territory_list')
-    
-    territories = Territory.objects.all()
+
+    territories_qs = Territory.objects.all().order_by('name')
+    territories = get_paginated_queryset(request, territories_qs)
     provinces = Province.objects.all()
     return render(request, 'territory_list.html', {'territories': territories, 'provinces': provinces})
 
+@login_required(login_url='users/login/')
 def question_template_list(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         type_q = request.POST.get('type')
-        
+
         QuestionTemplate.objects.create(name=name, type=type_q)
         messages.success(request, "Questionnaire ajouté avec succès.")
         return redirect('question_template_list')
-    
-    templates = QuestionTemplate.objects.all()
+
+    templates_qs = QuestionTemplate.objects.all().order_by('-created_at')
+    templates = get_paginated_queryset(request, templates_qs)
     type_choices = QuestionTemplate.TYPE_CHOICES
     return render(request, 'question_template_list.html', {'templates': templates, 'type_choices': type_choices})
 
+@login_required(login_url='users/login/')
 def question_list(request):
     if request.method == 'POST':
         template_id = request.POST.get('template')
         text = request.POST.get('text')
         kind = request.POST.get('kind')
         options_raw = request.POST.get('options')
-        
+
         options = []
         if options_raw:
             options = [opt.strip() for opt in options_raw.split(',') if opt.strip()]
-            
+
         Question.objects.create(
             template_id=template_id,
             text=text,
@@ -174,12 +250,42 @@ def question_list(request):
         )
         messages.success(request, "Question ajoutée avec succès.")
         return redirect('question_list')
-    
-    questions = Question.objects.all().select_related('template')
+
+    questions_qs = Question.objects.all().select_related('template').order_by('template__name')
+    questions = get_paginated_queryset(request, questions_qs)
     templates = QuestionTemplate.objects.all()
     kind_choices = Question.KIND_CHOICES
     return render(request, 'question_list.html', {
-        'questions': questions, 
+        'questions': questions,
         'templates': templates,
         'kind_choices': kind_choices
     })
+
+@login_required(login_url='users/login/')
+def recolte_list(request, type_recolte):
+    # type_recolte sera 'pre-scolaire', 'primaire' ou 'secondaire'
+    recoltes_qs = Recolte.objects.filter(type=type_recolte).order_by('-date')
+    recoltes = get_paginated_queryset(request, recoltes_qs)
+    
+    context = {
+        'recoltes': recoltes,
+        'type_recolte': type_recolte,
+        'title': f"Fiches de Récolte - {dict(Recolte.TYPE_CHOICES).get(type_recolte)}"
+    }
+    return render(request, 'recolte_list.html', context)
+
+@login_required(login_url='users/login/')
+def recolte_validate(request, pk):
+    recolte = get_object_or_404(Recolte, pk=pk)
+    recolte.status = 'valide'
+    recolte.save()
+    messages.success(request, f"La fiche de récolte pour {recolte.establishment.name} a été validée.")
+    return redirect('recolte_list', type_recolte=recolte.type)
+
+@login_required(login_url='users/login/')
+def recolte_reject(request, pk):
+    recolte = get_object_or_404(Recolte, pk=pk)
+    recolte.status = 'rejete'
+    recolte.save()
+    messages.warning(request, f"La fiche de récolte pour {recolte.establishment.name} a été rejetée.")
+    return redirect('recolte_list', type_recolte=recolte.type)

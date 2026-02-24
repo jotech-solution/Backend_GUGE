@@ -61,8 +61,9 @@
                 <td>{{ school.head_name }}</td>
                 <td>{{ school.get_management_regime_display }}</td>
                 <td>
-                  <a href="#!" class="avtar avtar-xs btn-link-secondary"><i class="ti ti-eye"></i></a>
-                  <a href="#!" class="avtar avtar-xs btn-link-secondary"><i class="ti ti-edit"></i></a>
+                  <a href="#!"><i class="bi bi-eye-fill"></i></a>
+                  <a href="#!"><i class="bi bi-pencil-square"></i></a>
+                  <a href="#!"><i class="bi bi-trash-fill"></i></a>
                 </td>
               </tr>
               {% empty %}
@@ -73,6 +74,7 @@
             </tbody>
           </table>
         </div>
+        {% include 'includes/pagination.html' with page_obj=schools %}
       </div>
     </div>
   </div>
