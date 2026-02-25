@@ -10,8 +10,22 @@ from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from datetime import datetime
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 # APIS
+@api_view(['POST'])
+def sync_schools_by_codes(request):
+    codes = request.data.get("codes", [])
+
+    schools = School.objects.filter(adm_code__in=codes)
+
+    serializer = SchoolSerializer(schools, many=True)
+
+    return Response({
+        "schools": serializer.data
+    })
+
 class QuestionTemplateViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -178,7 +192,7 @@ def school_form(request):
             village=village, adm_code=adm_code, legal_reference=legal_reference,
             secope_number=secope_number, management_regime=management_regime,
             mechanized_status=mechanized_status, ownership_status=ownership_status,
-            environment=environment, regroupment_center=regroupment_center
+            environment=environment, regroupment_center=regroupment_center, updated_at=datetime.now()
         )
         messages.success(request, "École ajoutée avec succès.")
         return redirect('school_list')
