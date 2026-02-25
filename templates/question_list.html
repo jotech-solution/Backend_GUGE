@@ -79,6 +79,7 @@
                                 <th>Question</th>
                                 <th>Type</th>
                                 <th>Options</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -93,6 +94,10 @@
                                     {% else %}
                                         -
                                     {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'question_edit' question.pk %}" class="btn btn-sm btn-light-primary"><i class="ti ti-edit"></i></a>
+                                    <a href="{% url 'question_delete' question.pk %}" class="btn btn-sm btn-light-danger"><i class="ti ti-trash"></i></a>
                                 </td>
                             </tr>
                             {% empty %}

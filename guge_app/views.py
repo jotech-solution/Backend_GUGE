@@ -4,11 +4,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
-from .serializers import SchoolSerializer, QuestionTemplateSerializer
+from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer
 from .filters import SchoolFilter
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from datetime import datetime
 
 # APIS
 class QuestionTemplateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -47,6 +48,12 @@ class SchoolViewSet(viewsets.ModelViewSet):
         "created_at",
     ]
 
+class SchoolSyncViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = School.objects.all()
+    serializer_class = SchoolSyncSerializer
+    pagination_class = None  # Souvent utile pour la synchro de tout récupérer d'un coup
+
 # Create your views here.
 @login_required(login_url='users/login/')
 def home(request):
@@ -74,6 +81,71 @@ def school_list(request):
     schools_qs = School.objects.all().order_by('-created_at')
     schools = get_paginated_queryset(request, schools_qs)
     return render(request, 'school_list.html', {'schools': schools})
+
+@login_required(login_url='users/login/')
+def school_detail(request, pk):
+    school = get_object_or_404(School, pk=pk)
+    return render(request, 'school_detail.html', {'school': school})
+
+@login_required(login_url='users/login/')
+def school_edit(request, pk):
+    school = get_object_or_404(School, pk=pk)
+    if request.method == 'POST':
+        # Mise à jour des données
+        school.name = request.POST.get('name')
+        school.address = request.POST.get('address')
+        school.head_name = request.POST.get('head_name')
+        school.head_phone = request.POST.get('head_phone')
+        school.province_id = request.POST.get('province')
+        school.city_id = request.POST.get('city') or None
+        school.territory_id = request.POST.get('territory') or None
+        school.division_id = request.POST.get('division')
+        school.sub_division_id = request.POST.get('sub_division')
+        school.village = request.POST.get('village')
+        school.adm_code = request.POST.get('adm_code')
+        school.legal_reference = request.POST.get('legal_reference')
+        school.secope_number = request.POST.get('secope_number')
+        school.management_regime = request.POST.get('management_regime')
+        school.mechanized_status = request.POST.get('mechanized_status')
+        school.ownership_status = request.POST.get('ownership_status')
+        school.environment = request.POST.get('environment')
+        school.regroupment_center = request.POST.get('regroupment_center')
+
+        school.updated_at = datetime.now()
+        
+        school.save()
+        messages.success(request, "École mise à jour avec succès.")
+        return redirect('school_list')
+
+    provinces = Province.objects.all()
+    divisions = Division.objects.all()
+    sub_divisions = SubDivision.objects.all()
+    cities = City.objects.all()
+    territories = Territory.objects.all()
+
+    context = {
+        'school': school,
+        'provinces': provinces,
+        'divisions': divisions,
+        'sub_divisions': sub_divisions,
+        'cities': cities,
+        'territories': territories,
+        'management_choices': School.MANAGEMENT_CHOICES,
+        'mechanized_choices': School.MECHANIZED_CHOICES,
+        'ownership_choices': School.OWNERSHIP_CHOICES,
+        'environment_choices': School.ENVIRONMENT_CHOICES,
+        'is_edit': True
+    }
+    return render(request, 'school_form.html', context)
+
+@login_required(login_url='users/login/')
+def school_delete(request, pk):
+    school = get_object_or_404(School, pk=pk)
+    if request.method == 'POST':
+        school.delete()
+        messages.success(request, "École supprimée avec succès.")
+        return redirect('school_list')
+    return render(request, 'school_confirm_delete.html', {'school': school})
 
 @login_required(login_url='users/login/')
 def school_form(request):
@@ -233,6 +305,34 @@ def question_template_list(request):
     return render(request, 'question_template_list.html', {'templates': templates, 'type_choices': type_choices})
 
 @login_required(login_url='users/login/')
+def question_template_detail(request, pk):
+    template = get_object_or_404(QuestionTemplate, pk=pk)
+    questions = template.questions.all()
+    return render(request, 'question_template_detail.html', {'template': template, 'questions': questions})
+
+@login_required(login_url='users/login/')
+def question_template_edit(request, pk):
+    template = get_object_or_404(QuestionTemplate, pk=pk)
+    if request.method == 'POST':
+        template.name = request.POST.get('name')
+        template.type = request.POST.get('type')
+        template.save()
+        messages.success(request, "Questionnaire mis à jour avec succès.")
+        return redirect('question_template_list')
+    
+    type_choices = QuestionTemplate.TYPE_CHOICES
+    return render(request, 'question_template_edit.html', {'template': template, 'type_choices': type_choices})
+
+@login_required(login_url='users/login/')
+def question_template_delete(request, pk):
+    template = get_object_or_404(QuestionTemplate, pk=pk)
+    if request.method == 'POST':
+        template.delete()
+        messages.success(request, "Questionnaire supprimé avec succès.")
+        return redirect('question_template_list')
+    return render(request, 'question_template_confirm_delete.html', {'template': template})
+
+@login_required(login_url='users/login/')
 def question_list(request):
     if request.method == 'POST':
         template_id = request.POST.get('template')
@@ -262,6 +362,41 @@ def question_list(request):
         'templates': templates,
         'kind_choices': kind_choices
     })
+
+@login_required(login_url='users/login/')
+def question_edit(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    if request.method == 'POST':
+        question.template_id = request.POST.get('template')
+        question.text = request.POST.get('text')
+        question.kind = request.POST.get('kind')
+        options_raw = request.POST.get('options')
+        
+        options = []
+        if options_raw:
+            options = [opt.strip() for opt in options_raw.split(',') if opt.strip()]
+        
+        question.options = options
+        question.save()
+        messages.success(request, "Question mise à jour avec succès.")
+        return redirect('question_list')
+    
+    templates = QuestionTemplate.objects.all()
+    kind_choices = Question.KIND_CHOICES
+    return render(request, 'question_edit.html', {
+        'question': question,
+        'templates': templates,
+        'kind_choices': kind_choices
+    })
+
+@login_required(login_url='users/login/')
+def question_delete(request, pk):
+    question = get_object_or_404(Question, pk=pk)
+    if request.method == 'POST':
+        question.delete()
+        messages.success(request, "Question supprimée avec succès.")
+        return redirect('question_list')
+    return render(request, 'question_confirm_delete.html', {'question': question})
 
 @login_required(login_url='users/login/')
 def recolte_list(request, type_recolte):

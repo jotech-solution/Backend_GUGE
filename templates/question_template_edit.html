@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier le Questionnaire - {{ template.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Modifier le Questionnaire</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'question_template_list' %}">Questionnaires</a></li>
+                    <li class="breadcrumb-item">Modifier</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Formulaire de modification</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nom du Questionnaire</label>
+                        <input type="text" name="name" class="form-control" value="{{ template.name }}" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Type</label>
+                        <select name="type" class="form-select" required>
+                            {% for val, label in type_choices %}
+                            <option value="{{ val }}" {% if template.type == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                        <a href="{% url 'question_template_list' %}" class="btn btn-light">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

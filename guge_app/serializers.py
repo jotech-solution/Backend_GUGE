@@ -11,6 +11,11 @@ class SchoolSerializer(serializers.ModelSerializer):
         model = School
         fields = "__all__"
 
+class SchoolSyncSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = School
+        fields = ["adm_code", "updated_at"]
+
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question

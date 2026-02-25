@@ -130,6 +130,7 @@ class School(models.Model):
 
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
+    sync = models.BooleanField(default=False, null=True, blank=True)
 
     def __str__(self):
         return self.name

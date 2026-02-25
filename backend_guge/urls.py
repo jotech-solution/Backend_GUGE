@@ -38,7 +38,7 @@ schema_view = get_schema_view(
         contact=openapi.Contact(email="admin@epst.com"),
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=(permissions.IsAuthenticatedOrReadOnly,),
 )
 
 urlpatterns = [
@@ -48,6 +48,7 @@ urlpatterns = [
     path('users/', include('mng_users.urls')),
     # APIS
     path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update',}), name='school_api_list'),
+    path('api/schools-sync/', views.SchoolSyncViewSet.as_view({'get': 'list'}), name='school_sync_api_list'),
     path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
     # TOKENS
     path("api/token/", TokenObtainPairView.as_view()),

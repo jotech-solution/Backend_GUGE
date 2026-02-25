@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails de l'École - {{ school.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Détails de l'École</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Accueil</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'school_list' %}">Écoles</a></li>
+          <li class="breadcrumb-item" aria-current="page">{{ school.name }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>{{ school.name }} - Informations Générales</h5>
+        <div>
+            <a href="{% url 'school_edit' school.pk %}" class="btn btn-primary btn-sm"><i class="ti ti-edit"></i> Modifier</a>
+            <a href="{% url 'school_delete' school.pk %}" class="btn btn-danger btn-sm"><i class="ti ti-trash"></i> Supprimer</a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 200px;">Code Administratif :</th>
+                        <td>{{ school.adm_code }}</td>
+                    </tr>
+                    <tr>
+                        <th>Adresse :</th>
+                        <td>{{ school.address }}</td>
+                    </tr>
+                    <tr>
+                        <th>Chef d'établissement :</th>
+                        <td>{{ school.head_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Téléphone du Chef :</th>
+                        <td>{{ school.head_phone }}</td>
+                    </tr>
+                    <tr>
+                        <th>Régime de gestion :</th>
+                        <td>{{ school.get_management_regime_display }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 200px;">Province :</th>
+                        <td>{{ school.province.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Division :</th>
+                        <td>{{ school.division.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Sous-Division :</th>
+                        <td>{{ school.sub_division.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Localisation :</th>
+                        <td>
+                            {% if school.city %}{{ school.city.name }} (Ville){% endif %}
+                            {% if school.territory %}{{ school.territory.name }} (Territoire){% endif %}
+                            {% if school.village %}, Village: {{ school.village }}{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Statut Mécanisation :</th>
+                        <td>{{ school.get_mechanized_status_display }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 200px;">Référence Légale :</th>
+                        <td>{{ school.legal_reference }}</td>
+                    </tr>
+                    <tr>
+                        <th>Numéro SECOPE :</th>
+                        <td>{{ school.secope_number }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 200px;">Statut Propriété :</th>
+                        <td>{{ school.get_ownership_status_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Milieu :</th>
+                        <td>{{ school.get_environment_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Centre Regroupement :</th>
+                        <td>{{ school.regroupment_center|default:"-" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
