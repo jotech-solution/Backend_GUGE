@@ -52,7 +52,7 @@ urlpatterns = [
         views.sync_schools_by_codes,
         name="sync_schools_by_codes"
     ),
-    path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update',}), name='school_api_list'),
+    path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create'}), name='school_api_list'),
     path('api/schools-sync/', views.SchoolSyncViewSet.as_view({'get': 'list'}), name='school_sync_api_list'),
     path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
     # TOKENS
