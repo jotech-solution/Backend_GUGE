@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Utilisateurs - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Gestion des Utilisateurs</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Tableau de bord</a></li>
+          <li class="breadcrumb-item" aria-current="page">Utilisateurs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Liste des Utilisateurs</h5>
+                <a href="{% url 'user_add' %}" class="btn btn-primary btn-sm">Ajouter un utilisateur</a>
+            </div>
+            <div class="card-body p-0">
+                {% if messages %}
+                <div class="m-3">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Utilisateur</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                                <th>Rôle</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-inline-block align-middle">
+                                        <img src="/static/images/user/avatar-2.jpg" alt="user image" class="img-radius align-top m-r-15" style="width:40px;">
+                                        <div class="d-inline-block">
+                                            <h6 class="m-b-0">{{ u.get_full_name|default:u.username }}</h6>
+                                            <p class="m-b-0 text-muted">@{{ u.username }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ u.email }}</td>
+                                <td>
+                                    {% if u.is_active %}
+                                    <span class="badge bg-light-success text-success">Actif</span>
+                                    {% else %}
+                                    <span class="badge bg-light-danger text-danger">Bloqué</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.is_staff %}Admin{% else %}Utilisateur{% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'user_edit' u.pk %}" class="btn btn-icon btn-outline-primary btn-sm me-1" title="Modifier">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                    <a href="{% url 'user_toggle_status' u.pk %}" class="btn btn-icon btn-outline-warning btn-sm me-1" title="{% if u.is_active %}Bloquer{% else %}Débloquer{% endif %}">
+                                        <i class="ti ti-lock{% if not u.is_active %}-open{% endif %}"></i>
+                                    </a>
+                                    <a href="{% url 'user_delete' u.pk %}" class="btn btn-icon btn-outline-danger btn-sm" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+                                        <i class="ti ti-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun utilisateur trouvé.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

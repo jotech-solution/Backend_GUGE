@@ -104,7 +104,7 @@
             <i class="ti ti-users"></i>
           </li>
           <li class="pc-item">
-            <a href="#!" class="pc-link">
+            <a href="{% url 'profile' %}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-user"></i></span>
               <span class="pc-mtext">Profil</span>
             </a>
@@ -113,8 +113,8 @@
             <li class="pc-item pc-hasmenu">
                 <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-users"></i></span><span class="pc-mtext">Gestion des utilisateurs</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
                 <ul class="pc-submenu">
-                    <li class="pc-item"><a class="pc-link" href="#!">Utilisateurs</a></li>
-                    <li class="pc-item"><a class="pc-link" href="#!">Groupes</a></li>
+                    <li class="pc-item"><a class="pc-link" href="{% url 'user_list' %}">Utilisateurs</a></li>
+                    <li class="pc-item"><a class="pc-link" href="{% url 'group_list' %}">Groupes</a></li>
                 </ul>
             </li>
         </ul>
@@ -169,11 +169,11 @@
                 </div>
               </div>
               <div class="dropdown-divider"></div>
-              <a href="#!" class="dropdown-item">
+              <a href="{% url 'profile' %}" class="dropdown-item">
                 <i class="ti ti-user"></i>
                 <span>Mon Profil</span>
               </a>
-              <a href="{% url 'logout' %}" class="dropdown-item">
+              <a href="{% url 'ask_logout' %}" class="dropdown-item">
                 <i class="ti ti-power"></i>
                 <span>Déconnexion</span>
               </a>

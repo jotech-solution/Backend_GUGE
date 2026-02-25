@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmation de déconnexion - Guge{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Déconnexion</h5>
+            </div>
+            <div class="card-body text-center">
+                <p>Êtes-vous sûr de vouloir vous déconnecter ?</p>
+                <div class="mt-4">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Oui, me déconnecter</button>
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

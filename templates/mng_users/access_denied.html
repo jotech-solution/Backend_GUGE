@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accès Refusé - Guge{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card bg-light-danger border-danger">
+            <div class="card-body text-center">
+                <i class="ti ti-lock text-danger" style="font-size: 4rem;"></i>
+                <h3 class="mt-3 text-danger">Accès Refusé</h3>
+                <p class="mt-2 text-muted">Désolé, vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+                <p>Si vous pensez qu'il s'agit d'une erreur, veuillez contacter votre administrateur.</p>
+                <div class="mt-4">
+                    <a href="{% url 'home' %}" class="btn btn-primary">Retour à l'accueil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

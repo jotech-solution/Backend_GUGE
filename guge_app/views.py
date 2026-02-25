@@ -6,12 +6,13 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from .serializers import SchoolSerializer, QuestionTemplateSerializer
 from .filters import SchoolFilter
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 # APIS
 class QuestionTemplateViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
 
     queryset = QuestionTemplate.objects.prefetch_related("questions").all()
     serializer_class = QuestionTemplateSerializer
@@ -19,6 +20,7 @@ class QuestionTemplateViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ["type"]   # pour filtrer par type
 
 class SchoolViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
 
     queryset = School.objects.select_related(
         "province",

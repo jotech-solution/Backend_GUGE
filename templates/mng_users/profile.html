@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Mon Profil</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Tableau de bord</a></li>
+          <li class="breadcrumb-item" aria-current="page">Profil</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Modifier mes informations</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prénom</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Email</label>
+                            {{ form.email }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <img src="/static/images/user/avatar-2.jpg" alt="user-image" class="img-radius img-fluid wid-100 mb-3">
+                <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                <p class="text-muted">{{ user.email }}</p>
+                <div class="badge bg-light-primary text-primary">{% if user.is_staff %}Administrateur{% else %}Utilisateur{% endif %}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -47,7 +47,7 @@ urlpatterns = [
     path('manage_guge/', include('guge_app.urls')),
     path('users/', include('mng_users.urls')),
     # APIS
-    path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create'}), name='school_api_list'),
+    path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create', 'put': 'update',}), name='school_api_list'),
     path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
     # TOKENS
     path("api/token/", TokenObtainPairView.as_view()),

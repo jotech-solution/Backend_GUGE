@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Groupes - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Gestion des Groupes</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Tableau de bord</a></li>
+          <li class="breadcrumb-item" aria-current="page">Groupes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Liste des Groupes (Rôles)</h5>
+                <a href="{% url 'group_add' %}" class="btn btn-primary btn-sm">Ajouter un groupe</a>
+            </div>
+            <div class="card-body p-0">
+                {% if messages %}
+                <div class="m-3">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nom du Groupe</th>
+                                <th>Nombre d'utilisateurs</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for g in groups %}
+                            <tr>
+                                <td>{{ g.name }}</td>
+                                <td>{{ g.user_set.count }}</td>
+                                <td>
+                                    <a href="{% url 'group_edit' g.pk %}" class="btn btn-icon btn-outline-primary btn-sm" title="Modifier">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">Aucun groupe trouvé.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
