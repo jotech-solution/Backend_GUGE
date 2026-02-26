@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
-from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer, RecolteSerializer
+from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer, RecolteSerializer, UserSerializer
 from .filters import SchoolFilter
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
@@ -62,6 +62,8 @@ class SchoolViewSet(viewsets.ModelViewSet):
         "created_at",
     ]
 
+
+
 class SchoolSyncViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = School.objects.all()
@@ -100,6 +102,11 @@ def get_paginated_queryset(request, queryset, count=10):
     return paginator.get_page(page_number)
 
 @login_required(login_url='users/login/')
+def school_map(request):
+    schools = School.objects.filter(geo_coord__isnull=False)
+    return render(request, 'school_map.html', {'schools': schools})
+
+@login_required(login_url='users/login/')
 def school_list(request):
     schools_qs = School.objects.all().order_by('-created_at')
     schools = get_paginated_queryset(request, schools_qs)
@@ -117,6 +124,7 @@ def school_edit(request, pk):
         # Mise à jour des données
         school.name = request.POST.get('name')
         school.address = request.POST.get('address')
+        school.level = request.POST.getlist('level')
         school.head_name = request.POST.get('head_name')
         school.head_phone = request.POST.get('head_phone')
         school.province_id = request.POST.get('province')
@@ -132,6 +140,15 @@ def school_edit(request, pk):
         school.mechanized_status = request.POST.get('mechanized_status')
         school.ownership_status = request.POST.get('ownership_status')
         school.environment = request.POST.get('environment')
+        
+        # Coordonnées Géo dans JSONField
+        lat = request.POST.get('latitude')
+        lon = request.POST.get('longitude')
+        if lat and lon:
+            school.geo_coord = {"lat": float(lat), "long": float(lon)}
+        else:
+            school.geo_coord = None
+
         school.regroupment_center = request.POST.get('regroupment_center')
 
         school.updated_at = datetime.now()
@@ -157,6 +174,7 @@ def school_edit(request, pk):
         'mechanized_choices': School.MECHANIZED_CHOICES,
         'ownership_choices': School.OWNERSHIP_CHOICES,
         'environment_choices': School.ENVIRONMENT_CHOICES,
+        'level_choices': School.NIVEAUX,
         'is_edit': True
     }
     return render(request, 'school_form.html', context)
@@ -176,6 +194,7 @@ def school_form(request):
         # Extraction des données du POST
         name = request.POST.get('name')
         address = request.POST.get('address')
+        level = request.POST.getlist('level')
         head_name = request.POST.get('head_name')
         head_phone = request.POST.get('head_phone')
         province_id = request.POST.get('province')
@@ -191,17 +210,23 @@ def school_form(request):
         mechanized_status = request.POST.get('mechanized_status')
         ownership_status = request.POST.get('ownership_status')
         environment = request.POST.get('environment')
+        
+        lat = request.POST.get('latitude')
+        lon = request.POST.get('longitude')
+        geo_coord = {"latitude": float(lat), "longitude": float(lon)} if lat and lon else None
+        
         regroupment_center = request.POST.get('regroupment_center')
 
         # Création de l'école
         School.objects.create(
-            name=name, address=address, head_name=head_name, head_phone=head_phone,
+            name=name, address=address, level=level, head_name=head_name, head_phone=head_phone,
             province_id=province_id, city_id=city_id, territory_id=territory_id,
             division_id=division_id, sub_division_id=sub_division_id,
             village=village, adm_code=adm_code, legal_reference=legal_reference,
             secope_number=secope_number, management_regime=management_regime,
             mechanized_status=mechanized_status, ownership_status=ownership_status,
-            environment=environment, regroupment_center=regroupment_center, updated_at=datetime.now()
+            environment=environment, geo_coord=geo_coord,
+            regroupment_center=regroupment_center, updated_at=datetime.now()
         )
         messages.success(request, "École ajoutée avec succès.")
         return redirect('school_list')
@@ -222,6 +247,7 @@ def school_form(request):
         'mechanized_choices': School.MECHANIZED_CHOICES,
         'ownership_choices': School.OWNERSHIP_CHOICES,
         'environment_choices': School.ENVIRONMENT_CHOICES,
+        'level_choices': School.NIVEAUX,
     }
     return render(request, 'school_form.html', context)
 

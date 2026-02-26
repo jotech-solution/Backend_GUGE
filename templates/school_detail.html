@@ -44,6 +44,16 @@
                         <td>{{ school.address }}</td>
                     </tr>
                     <tr>
+                        <th>Niveaux :</th>
+                        <td>
+                          {% for l in school.level %}
+                            <span class="badge bg-light-primary text-primary">{{ l }}</span>
+                          {% empty %}
+                            -
+                          {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Chef d'établissement :</th>
                         <td>{{ school.head_name }}</td>
                     </tr>
@@ -109,6 +119,16 @@
                     <tr>
                         <th>Milieu :</th>
                         <td>{{ school.get_environment_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Coordonnées :</th>
+                        <td>
+                            {% if school.latitude and school.longitude %}
+                                Lat: {{ school.latitude }}, Lon: {{ school.longitude }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <th>Centre Regroupement :</th>

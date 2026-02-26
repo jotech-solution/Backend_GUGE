@@ -41,6 +41,21 @@
             </div>
 
             <div class="col-md-6">
+              <label class="form-label d-block">Niveaux d'enseignement</label>
+              <div class="d-flex flex-wrap gap-3 mt-2">
+                {% for k, v in level_choices %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="level" value="{{ k }}" id="level_{{ k }}" 
+                    {% if k in school.level %}checked{% endif %}>
+                  <label class="form-check-label" for="level_{{ k }}">
+                    {{ v }}
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
               <label class="form-label">Chef d'Établissement</label>
               <input type="text" name="head_name" class="form-control" value="{{ school.head_name|default:'' }}" required>
             </div>
@@ -150,6 +165,15 @@
                 <option value="{{ k }}" {% if school.environment == k %}selected{% endif %}>{{ v }}</option>
                 {% endfor %}
               </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Latitude</label>
+              <input type="number" step="any" name="latitude" class="form-control" value="{{ school.geo_coord.latitude|default:'' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Longitude</label>
+              <input type="number" step="any" name="longitude" class="form-control" value="{{ school.geo_coord.longitude|default:'' }}">
             </div>
 
             <div class="col-md-12">

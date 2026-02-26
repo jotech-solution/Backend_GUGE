@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}" id="main-style-link" >
   <link rel="stylesheet" href="{% static 'css/style-preset.css' %}" >
   
+  {% block head %}{% endblock %}
   {% block extra_head %}{% endblock %}
 </head>
 <!-- [Head] end -->
@@ -70,6 +71,12 @@
             <a href="{% url 'school_list' %}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-building-community"></i></span>
               <span class="pc-mtext">Écoles</span>
+            </a>
+          </li>
+          <li class="pc-item">
+            <a href="{% url 'school_map' %}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-map"></i></span>
+              <span class="pc-mtext">Carte des Écoles</span>
             </a>
           </li>
           <li class="pc-item">

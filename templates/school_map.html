@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Carte des Écoles - Guge{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+    #map { height: 600px; width: 100%; border-radius: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Carte des Écoles</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'school_list' %}">Écoles</a></li>
+          <li class="breadcrumb-item" aria-current="page">Carte</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5>Localisation des Écoles</h5>
+        <a href="{% url 'school_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-list"></i> Liste</a>
+      </div>
+      <div class="card-body">
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialiser la carte sur la RDC par défaut ou le premier point
+        var map = L.map('map').setView([-4.0383, 21.7587], 5);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var markers = [];
+
+        {% for school in schools %}
+            {% if school.geo_coord.lat and school.geo_coord.long %}
+                var marker = L.marker([{{ school.latitude }}, {{ school.longitude }}])
+                    .addTo(map)
+                    .bindPopup("<b>{{ school.name }}</b><br>{{ school.address }}<br><a href='{% url 'school_detail' school.pk %}'>Voir détails</a>");
+                markers.push(marker);
+            {% endif %}
+            console.log({{ school.latitude }})
+        {% endfor %}
+
+        if (markers.length > 0) {
+            var group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    });
+</script>
+{% endblock %}

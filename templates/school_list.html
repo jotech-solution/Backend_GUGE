@@ -29,6 +29,7 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5>Liste des Écoles</h5>
         <div>
+          <a href="{% url 'school_map' %}" class="btn btn-info btn-sm"><i class="ti ti-map"></i> Carte</a>
           <a href="{% url 'school_add' %}" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> École</a>
           <a href="{% url 'province_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Province</a>
           <a href="{% url 'division_list' %}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-plus"></i> Division</a>
@@ -44,6 +45,7 @@
               <tr>
                 <th>Code Adm.</th>
                 <th>Nom de l'École</th>
+                <th>Niveau</th>
                 <th>Province</th>
                 <th>Division</th>
                 <th>Chef d'Établissement</th>
@@ -56,6 +58,13 @@
               <tr>
                 <td>{{ school.adm_code }}</td>
                 <td>{{ school.name }}</td>
+                <td>
+                  {% for l in school.level %}
+                    <span class="badge bg-light-primary text-primary">{{ l }}</span>
+                  {% empty %}
+                    -
+                  {% endfor %}
+                </td>
                 <td>{{ school.province.name }}</td>
                 <td>{{ school.division.name }}</td>
                 <td>{{ school.head_name }}</td>
