@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import School, Question, QuestionTemplate
+from .models import School, Question, QuestionTemplate, Recolte
 
 class SchoolSerializer(serializers.ModelSerializer):
     province_name = serializers.CharField(source="province.name", read_only=True)
@@ -37,4 +37,9 @@ class QuestionTemplateSerializer(serializers.ModelSerializer):
             "type",
             "questions",
         ]
+
+class RecolteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recolte
+        fields = "__all__"
 

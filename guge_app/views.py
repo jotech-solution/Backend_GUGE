@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
-from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer
+from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer, RecolteSerializer
 from .filters import SchoolFilter
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
@@ -67,6 +67,15 @@ class SchoolSyncViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = School.objects.all()
     serializer_class = SchoolSyncSerializer
     pagination_class = None  # Souvent utile pour la synchro de tout récupérer d'un coup
+
+class RecolteViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Recolte.objects.all()
+    serializer_class = RecolteSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["type", "status", "establishment"]
+    search_fields = ["collector_name", "establishment__name"]
+    ordering_fields = ["date", "created_at"]
 
 # Create your views here.
 @login_required(login_url='users/login/')

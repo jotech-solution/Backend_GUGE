@@ -54,6 +54,8 @@ urlpatterns = [
     ),
     path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create'}), name='school_api_list'),
     path('api/schools-sync/', views.SchoolSyncViewSet.as_view({'get': 'list'}), name='school_sync_api_list'),
+    path('api/recoltes/', views.RecolteViewSet.as_view({'get': 'list', 'post': 'create'}), name='recolte_api_list'),
+    path('api/recoltes/<uuid:pk>/', views.RecolteViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='recolte_api_detail'),
     path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
     # TOKENS
     path("api/token/", TokenObtainPairView.as_view()),
