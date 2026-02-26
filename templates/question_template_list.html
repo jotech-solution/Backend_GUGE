@@ -82,6 +82,7 @@
                                     <a href="{% url 'question_template_detail' template.pk %}" class="avtar avtar-xs btn-link-secondary"><i class="ti ti-eye"></i></a>
                                     <a href="{% url 'question_template_edit' template.pk %}" class="avtar avtar-xs btn-link-secondary"><i class="ti ti-edit"></i></a>
                                     <a href="{% url 'question_template_delete' template.pk %}" class="avtar avtar-xs btn-link-danger"><i class="ti ti-trash"></i></a>
+                                    <a href="{% url 'question_add_multiple' template.pk %}" class="avtar avtar-xs btn-link-secondary" title="Ajouter des questions"><i class="ti ti-list-plus"></i></a>
                                 </td>
                             </tr>
                             {% empty %}

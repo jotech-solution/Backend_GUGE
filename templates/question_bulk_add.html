@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter des questions - {{ template.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Ajouter des questions à "{{ template.name }}"</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'question_template_list' %}">Questionnaires</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'question_template_detail' template.pk %}">{{ template.name }}</a></li>
+                    <li class="breadcrumb-item">Ajouter des questions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Formulaire</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="bulk-form">
+                    {% csrf_token %}
+                    <div id="questions-container">
+                        <div class="question-block mb-4">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Texte de la question</label>
+                                <textarea name="text" class="form-control" rows="2" required></textarea>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Type de réponse</label>
+                                <select name="kind" class="form-select kind-select" required>
+                                    <option value="">Sélectionner un type</option>
+                                    {% for val,label in kind_choices %}
+                                    <option value="{{ val }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group mb-3 options-group" style="display: none;">
+                                <label class="form-label">Options (séparées par des virgules)</label>
+                                <input type="text" name="options" class="form-control">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-danger remove-question">Supprimer</button>
+                            <hr/>
+                        </div>
+                    </div>
+                    <button type="button" id="add-question" class="btn btn-secondary mb-3">Ajouter une autre question</button>
+                    <button type="submit" class="btn btn-primary w-100">Enregistrer les questions</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Questions existantes</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Type</th>
+                                <th>Options</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in questions %}
+                            <tr>
+                                <td>{{ q.text|truncatechars:50 }}</td>
+                                <td><span class="badge bg-light-secondary text-secondary">{{ q.get_kind_display }}</span></td>
+                                <td>
+                                    {% if q.kind == 'choice' %}
+                                        <small>{{ q.options|join:", " }}</small>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'question_edit' q.pk %}" class="btn btn-sm btn-light-primary"><i class="ti ti-edit"></i></a>
+                                    <a href="{% url 'question_delete' q.pk %}" class="btn btn-sm btn-light-danger"><i class="ti ti-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center">Aucune question.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'includes/pagination.html' with page_obj=questions %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleOptions(selectElem) {
+        const block = selectElem.closest('.question-block').querySelector('.options-group');
+        if (selectElem.value === 'choice') {
+            block.style.display = 'block';
+        } else {
+            block.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('add-question').addEventListener('click', function() {
+            const container = document.getElementById('questions-container');
+            const newBlock = container.querySelector('.question-block').cloneNode(true);
+            // clear values
+            newBlock.querySelector('textarea[name="text"]').value = '';
+            newBlock.querySelector('select[name="kind"]').value = '';
+            newBlock.querySelector('.options-group input').value = '';
+            newBlock.querySelector('.options-group').style.display = 'none';
+            container.appendChild(newBlock);
+        });
+
+        document.getElementById('questions-container').addEventListener('change', function(e) {
+            if (e.target.matches('.kind-select')) {
+                toggleOptions(e.target);
+            }
+        });
+
+        document.getElementById('questions-container').addEventListener('click', function(e) {
+            if (e.target.matches('.remove-question')) {
+                const block = e.target.closest('.question-block');
+                if (document.querySelectorAll('.question-block').length > 1) {
+                    block.remove();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

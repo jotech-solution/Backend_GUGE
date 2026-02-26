@@ -367,6 +367,39 @@ def question_template_detail(request, pk):
     return render(request, 'question_template_detail.html', {'template': template, 'questions': questions})
 
 @login_required(login_url='users/login/')
+def question_add_multiple(request, template_id):
+    """Formulaire permettant d'ajouter plusieurs questions à la fois pour un template donné."""
+    template = get_object_or_404(QuestionTemplate, pk=template_id)
+    if request.method == 'POST':
+        texts = request.POST.getlist('text')
+        kinds = request.POST.getlist('kind')
+        options_list = request.POST.getlist('options')
+
+        for text, kind, opts in zip(texts, kinds, options_list):
+            if not text.strip():
+                continue
+            options = []
+            if kind == 'choice' and opts:
+                options = [opt.strip() for opt in opts.split(',') if opt.strip()]
+            Question.objects.create(
+                template=template,
+                text=text,
+                kind=kind,
+                options=options
+            )
+        messages.success(request, "Questions ajoutées avec succès.")
+        return redirect('question_template_detail', pk=template_id)
+
+    kind_choices = Question.KIND_CHOICES
+    questions_qs = template.questions.all()
+    questions = get_paginated_queryset(request, questions_qs)
+    return render(request, 'question_bulk_add.html', {
+        'template': template,
+        'kind_choices': kind_choices,
+        'questions': questions
+    })
+
+@login_required(login_url='users/login/')
 def question_template_edit(request, pk):
     template = get_object_or_404(QuestionTemplate, pk=pk)
     if request.method == 'POST':

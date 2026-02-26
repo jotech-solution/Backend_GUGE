@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+# new view for bulk adding questions
+
 urlpatterns = [
     path('', views.home, name='home'),
     path('schools/', views.school_list, name='school_list'),
@@ -18,6 +20,7 @@ urlpatterns = [
     path('questionnaires/<uuid:pk>/', views.question_template_detail, name='question_template_detail'),
     path('questionnaires/<uuid:pk>/edit/', views.question_template_edit, name='question_template_edit'),
     path('questionnaires/<uuid:pk>/delete/', views.question_template_delete, name='question_template_delete'),
+    path('questionnaires/<uuid:template_id>/add-questions/', views.question_add_multiple, name='question_add_multiple'),
     path('questions/', views.question_list, name='question_list'),
     path('questions/<uuid:pk>/edit/', views.question_edit, name='question_edit'),
     path('questions/<uuid:pk>/delete/', views.question_delete, name='question_delete'),
