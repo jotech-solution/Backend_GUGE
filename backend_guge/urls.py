@@ -52,6 +52,7 @@ urlpatterns = [
         views.sync_schools_by_codes,
         name="sync_schools_by_codes"
     ),
+    path('api/me/', views.get_current_user, name='get_current_user'),
     path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create'}), name='school_api_list'),
     path('api/schools-sync/', views.SchoolSyncViewSet.as_view({'get': 'list'}), name='school_sync_api_list'),
     path('api/recoltes/', views.RecolteViewSet.as_view({'get': 'list', 'post': 'create'}), name='recolte_api_list'),
