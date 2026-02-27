@@ -57,6 +57,8 @@ urlpatterns = [
     path('api/recoltes/', views.RecolteViewSet.as_view({'get': 'list', 'post': 'create'}), name='recolte_api_list'),
     path('api/recoltes/mine/', views.recoltes_mine, name='recoltes_mine'),
     path('api/recoltes/<uuid:pk>/', views.RecolteViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='recolte_api_detail'),
+    path('api/campaigns/', views.CampaignViewSet.as_view({'get': 'list', 'post': 'create'}), name='campaign_api_list'),
+    path('api/campaigns/<uuid:pk>/', views.CampaignViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='campaign_api_detail'),
     path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
     # TOKENS
     path("api/token/", views.MyTokenObtainPairView.as_view()),

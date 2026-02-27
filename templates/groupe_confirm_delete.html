@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmer la suppression - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Confirmer la suppression</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'groupe_list' %}">Groupes</a></li>
+                    <li class="breadcrumb-item">Suppression</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5>Êtes-vous sûr(e) de vouloir supprimer ce groupe ?</h5>
+                <p class="text-muted">
+                    Groupe : <strong>{{ groupe.name }}</strong>
+                </p>
+                {% if groupe.questions.count > 0 %}
+                <div class="alert alert-warning">
+                    ⚠️ Ce groupe contient <strong>{{ groupe.questions.count }}</strong> question(s). La suppression n'affectera pas ces questions (elles resteront sans groupe).
+                </div>
+                {% endif %}
+                <form method="POST" class="mt-3">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer définitivement</button>
+                    <a href="{% url 'groupe_list' %}" class="btn btn-light">Annuler</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

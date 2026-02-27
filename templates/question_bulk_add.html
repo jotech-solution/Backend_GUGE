@@ -46,6 +46,20 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Groupe (optionnel)</label>
+                                <div class="input-group">
+                                    <select name="groupe" class="form-select groupe-select">
+                                        <option value="">Aucun groupe</option>
+                                        {% for groupe in groupes %}
+                                        <option value="{{ groupe.id }}">{{ groupe.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="btn btn-outline-primary add-groupe-btn" data-bs-toggle="modal" data-bs-target="#addGroupeModalBulk" title="Ajouter un groupe">
+                                        <i class="ti ti-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                             <div class="form-group mb-3 options-group" style="display: none;">
                                 <label class="form-label">Options (séparées par des virgules)</label>
                                 <input type="text" name="options" class="form-control">
@@ -105,6 +119,41 @@
         </div>
     </div>
 </div>
+
+<!-- Modal pour ajouter un groupe (bulk) -->
+<div class="modal fade" id="addGroupeModalBulk" tabindex="-1" aria-labelledby="addGroupeModalBulkLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGroupeModalBulkLabel">Ajouter un Groupe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addGroupeFormBulk">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nom du Groupe</label>
+                        <input type="text" name="name" id="groupe-name-bulk" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Description (optionnel)</label>
+                        <textarea name="description" id="groupe-description-bulk" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Ordre</label>
+                        <input type="number" name="order" id="groupe-order-bulk" class="form-control" value="1" required>
+                    </div>
+                    <div id="addGroupeErrorBulk" class="alert alert-danger" style="display: none;"></div>
+                    <div id="addGroupeSuccessBulk" class="alert alert-success" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="addGroupeBtnBulk">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -118,6 +167,17 @@
         }
     }
 
+    function attachAddGroupeListener(selectElem) {
+        const btn = selectElem.closest('.input-group').querySelector('.add-groupe-btn');
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Store reference to the current select for later use
+                window.currentGroupeSelect = selectElem;
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('add-question').addEventListener('click', function() {
             const container = document.getElementById('questions-container');
@@ -125,8 +185,14 @@
             // clear values
             newBlock.querySelector('textarea[name="text"]').value = '';
             newBlock.querySelector('select[name="kind"]').value = '';
+            newBlock.querySelector('select[name="groupe"]').value = '';
             newBlock.querySelector('.options-group input').value = '';
             newBlock.querySelector('.options-group').style.display = 'none';
+            
+            // Attach listener to new groupe select
+            const newGroupeSelect = newBlock.querySelector('.groupe-select');
+            attachAddGroupeListener(newGroupeSelect);
+            
             container.appendChild(newBlock);
         });
 
@@ -143,6 +209,88 @@
                     block.remove();
                 }
             }
+        });
+
+        // Attach listener to initial groupe select
+        document.querySelectorAll('.groupe-select').forEach(select => {
+            attachAddGroupeListener(select);
+        });
+
+        // Gestion de l'ajout de groupe
+        const addGroupeBtnBulk = document.getElementById('addGroupeBtnBulk');
+        const addGroupeFormBulk = document.getElementById('addGroupeFormBulk');
+        const addGroupeErrorBulk = document.getElementById('addGroupeErrorBulk');
+        const addGroupeSuccessBulk = document.getElementById('addGroupeSuccessBulk');
+        const addGroupeModalBulk = document.getElementById('addGroupeModalBulk');
+
+        addGroupeBtnBulk.addEventListener('click', function() {
+            addGroupeErrorBulk.style.display = 'none';
+            addGroupeSuccessBulk.style.display = 'none';
+
+            const name = document.getElementById('groupe-name-bulk').value;
+            const description = document.getElementById('groupe-description-bulk').value;
+            const order = document.getElementById('groupe-order-bulk').value;
+
+            if (!name.trim()) {
+                addGroupeErrorBulk.textContent = 'Veuillez entrer un nom pour le groupe.';
+                addGroupeErrorBulk.style.display = 'block';
+                return;
+            }
+
+            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+            fetch('{% url "groupe_list" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    order: parseInt(order),
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Erreur lors de la création du groupe');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Ajouter le nouveau groupe à tous les selects
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                
+                document.querySelectorAll('.groupe-select').forEach(select => {
+                    const newOption = option.cloneNode(true);
+                    select.appendChild(newOption);
+                });
+
+                // Sélectionner le nouveau groupe dans le select courant
+                if (window.currentGroupeSelect) {
+                    window.currentGroupeSelect.value = data.id;
+                    window.currentGroupeSelect = null;
+                }
+
+                // Réinitialiser le formulaire et fermer le modal
+                addGroupeFormBulk.reset();
+                document.getElementById('groupe-order-bulk').value = 1;
+                addGroupeSuccessBulk.textContent = 'Groupe créé avec succès!';
+                addGroupeSuccessBulk.style.display = 'block';
+
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(addGroupeModalBulk);
+                    modal.hide();
+                }, 1500);
+            })
+            .catch(error => {
+                addGroupeErrorBulk.textContent = error.message;
+                addGroupeErrorBulk.style.display = 'block';
+            });
         });
     });
 </script>

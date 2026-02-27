@@ -1,6 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import School, Question, QuestionTemplate, Recolte
+from .models import School, Question, QuestionTemplate, Recolte, Groupe, Campaign
 from django.contrib.auth.models import User
 
 class SchoolSerializer(serializers.ModelSerializer):
@@ -17,7 +17,21 @@ class SchoolSyncSerializer(serializers.ModelSerializer):
         model = School
         fields = ["adm_code", "updated_at"]
 
+class GroupeInfoSerializer(serializers.ModelSerializer):
+    """Serializer used to represent group info as a simple dict."""
+    class Meta:
+        model = Groupe
+        fields = [
+            "id",
+            "name",
+            "order",
+        ]
+
+
 class QuestionSerializer(serializers.ModelSerializer):
+    # show the groupe field as a nested dict instead of just the PK
+    groupe = GroupeInfoSerializer(read_only=True, allow_null=True)
+
     class Meta:
         model = Question
         fields = [
@@ -25,7 +39,24 @@ class QuestionSerializer(serializers.ModelSerializer):
             "text",
             "kind",
             "options",
+            "groupe",
         ]
+
+
+class GroupeSerializer(serializers.ModelSerializer):
+    questions = QuestionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Groupe
+        fields = [
+            "id",
+            "name",
+            "description",
+            "order",
+            "questions",
+        ]
+
+
 class QuestionTemplateSerializer(serializers.ModelSerializer):
 
     questions = QuestionSerializer(many=True, read_only=True)
@@ -38,6 +69,29 @@ class QuestionTemplateSerializer(serializers.ModelSerializer):
             "type",
             "questions",
         ]
+
+
+class CampaignSerializer(serializers.ModelSerializer):
+    question_templates = QuestionTemplateSerializer(many=True, read_only=True)
+    recolte_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "name",
+            "start_date",
+            "end_date",
+            "comments",
+            "question_templates",
+            "recolte_count",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_recolte_count(self, obj):
+        return obj.recoltes.count()
+
 
 class RecolteSerializer(serializers.ModelSerializer):
     class Meta:

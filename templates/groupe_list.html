@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Groupes de Questions - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Gestion des Groupes de Questions</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item">Groupes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Formulaire d'ajout -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Ajouter un Groupe</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nom du Groupe</label>
+                        <input type="text" name="name" class="form-control" placeholder="Ex: Section A, Partie 1, etc..." required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Description (optionnel)</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Description du groupe"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Ordre d'affichage</label>
+                        <input type="number" name="order" class="form-control" value="0" min="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Créer le Groupe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des groupes -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Liste des Groupes</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Description</th>
+                                <th>Ordre</th>
+                                <th>Nombre de questions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for groupe in groupes %}
+                            <tr>
+                                <td><strong>{{ groupe.name }}</strong></td>
+                                <td>{{ groupe.description|truncatechars:50 }}</td>
+                                <td><span class="badge bg-light-secondary">{{ groupe.order }}</span></td>
+                                <td><span class="badge bg-light-primary text-primary">{{ groupe.questions.count }}</span></td>
+                                <td>
+                                    <a href="{% url 'groupe_edit' groupe.pk %}" class="avtar avtar-xs btn-link-secondary" title="Modifier"><i class="ti ti-edit"></i></a>
+                                    <a href="{% url 'groupe_delete' groupe.pk %}" class="avtar avtar-xs btn-link-danger" title="Supprimer"><i class="ti ti-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun groupe créé.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'includes/pagination.html' with page_obj=groupes %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

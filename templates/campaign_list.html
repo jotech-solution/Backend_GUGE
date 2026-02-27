@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Campagnes - Guge{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Gestion des Campagnes</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item">Campagnes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Formulaire d'ajout -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Créer une Campagne</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nom de la Campagne</label>
+                        <input type="text" name="name" class="form-control" placeholder="Ex: Campagne Q1 2026" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Date de début</label>
+                        <input type="datetime-local" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Date de fin</label>
+                        <input type="datetime-local" name="end_date" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Questionnaires (optionnel)</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #e9ecef; padding: 10px; border-radius: 4px;">
+                            {% for template in templates %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="question_templates" value="{{ template.id }}" id="template_{{ template.id }}">
+                                <label class="form-check-label" for="template_{{ template.id }}">
+                                    {{ template.name }} ({{ template.get_type_display }})
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Commentaires (optionnel)</label>
+                        <textarea name="comments" class="form-control" rows="2" placeholder="Commentaires..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Créer la Campagne</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des campagnes -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Liste des Campagnes</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Statut</th>
+                                <th>Début</th>
+                                <th>Fin</th>
+                                <th>Templates</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td><strong>{{ campaign.name }}</strong></td>
+                                <td>
+                                    {% if campaign.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ campaign.start_date|date:"d/m/Y H:i" }}</td>
+                                <td>{{ campaign.end_date|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="badge bg-light-info text-info">{{ campaign.question_templates.count }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'campaign_detail' campaign.pk %}" class="avtar avtar-xs btn-link-secondary" title="Voir"><i class="ti ti-eye"></i></a>
+                                    <a href="{% url 'campaign_edit' campaign.pk %}" class="avtar avtar-xs btn-link-secondary" title="Modifier"><i class="ti ti-edit"></i></a>
+                                    <a href="{% url 'campaign_delete' campaign.pk %}" class="avtar avtar-xs btn-link-danger" title="Supprimer"><i class="ti ti-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucune campagne créée.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'includes/pagination.html' with page_obj=campaigns %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

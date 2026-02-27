@@ -53,6 +53,20 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Groupe (optionnel)</label>
+                        <div class="input-group">
+                            <select name="groupe" id="groupe-select-list" class="form-select">
+                                <option value="">Aucun groupe</option>
+                                {% for groupe in groupes %}
+                                <option value="{{ groupe.id }}">{{ groupe.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addGroupeModalList" title="Ajouter un groupe">
+                                <i class="ti ti-plus"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div class="form-group mb-3" id="options-group" style="display: none;">
                         <label class="form-label">Options (séparées par des virgules)</label>
                         <input type="text" name="options" class="form-control" placeholder="Option 1, Option 2, Option 3">
@@ -113,6 +127,41 @@
         </div>
     </div>
 </div>
+
+<!-- Modal pour ajouter un groupe (question_list)-->
+<div class="modal fade" id="addGroupeModalList" tabindex="-1" aria-labelledby="addGroupeModalListLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addGroupeModalListLabel">Ajouter un Groupe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addGroupeFormList">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label class="form-label">Nom du Groupe</label>
+                        <input type="text" name="name" id="groupe-name-list" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Description (optionnel)</label>
+                        <textarea name="description" id="groupe-description-list" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Ordre</label>
+                        <input type="number" name="order" id="groupe-order-list" class="form-control" value="1" required>
+                    </div>
+                    <div id="addGroupeErrorList" class="alert alert-danger" style="display: none;"></div>
+                    <div id="addGroupeSuccessList" class="alert alert-success" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="addGroupeBtnList">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -127,6 +176,75 @@
             } else {
                 optionsGroup.style.display = 'none';
             }
+        });
+
+        // Gestion de l'ajout de groupe
+        const addGroupeBtnList = document.getElementById('addGroupeBtnList');
+        const addGroupeFormList = document.getElementById('addGroupeFormList');
+        const addGroupeErrorList = document.getElementById('addGroupeErrorList');
+        const addGroupeSuccessList = document.getElementById('addGroupeSuccessList');
+        const groupeSelectList = document.getElementById('groupe-select-list');
+        const addGroupeModalList = document.getElementById('addGroupeModalList');
+
+        addGroupeBtnList.addEventListener('click', function() {
+            addGroupeErrorList.style.display = 'none';
+            addGroupeSuccessList.style.display = 'none';
+
+            const name = document.getElementById('groupe-name-list').value;
+            const description = document.getElementById('groupe-description-list').value;
+            const order = document.getElementById('groupe-order-list').value;
+
+            if (!name.trim()) {
+                addGroupeErrorList.textContent = 'Veuillez entrer un nom pour le groupe.';
+                addGroupeErrorList.style.display = 'block';
+                return;
+            }
+
+            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+            fetch('{% url "groupe_list" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    order: parseInt(order),
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Erreur lors de la création du groupe');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Ajouter le nouveau groupe au select
+                const option = document.createElement('option');
+                option.value = data.id;
+                option.textContent = data.name;
+                option.selected = true;
+                groupeSelectList.appendChild(option);
+
+                // Réinitialiser le formulaire et fermer le modal
+                addGroupeFormList.reset();
+                document.getElementById('groupe-order-list').value = 1;
+                addGroupeSuccessList.textContent = 'Groupe créé avec succès!';
+                addGroupeSuccessList.style.display = 'block';
+
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(addGroupeModalList);
+                    modal.hide();
+                }, 1500);
+            })
+            .catch(error => {
+                addGroupeErrorList.textContent = error.message;
+                addGroupeErrorList.style.display = 'block';
+            });
         });
     });
 </script>

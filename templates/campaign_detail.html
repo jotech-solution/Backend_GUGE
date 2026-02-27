@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails - Campagne {{ campaign.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-block">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Détails de la Campagne</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'campaign_list' %}">Campagnes</a></li>
+                    <li class="breadcrumb-item">{{ campaign.name }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Informations Générales</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Nom :</strong> {{ campaign.name }}</p>
+                <p><strong>Statut :</strong>
+                    {% if campaign.is_active %}
+                        <span class="badge bg-success">Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </p>
+                <p><strong>Date de début :</strong> {{ campaign.start_date|date:"d/m/Y H:i" }}</p>
+                <p><strong>Date de fin :</strong> {{ campaign.end_date|date:"d/m/Y H:i" }}</p>
+                <p><strong>Nombre de Récoltes :</strong> <span class="badge bg-light-primary">{{ campaign.recoltes.count }}</span></p>
+                {% if campaign.comments %}
+                <hr>
+                <p><strong>Commentaires :</strong></p>
+                <p>{{ campaign.comments }}</p>
+                {% endif %}
+                <hr>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'campaign_edit' campaign.pk %}" class="btn btn-primary">Modifier</a>
+                    <a href="{% url 'campaign_delete' campaign.pk %}" class="btn btn-danger">Supprimer</a>
+                    <a href="{% url 'campaign_list' %}" class="btn btn-light">Retour</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Questionnaires de la Campagne</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if campaign.question_templates.all %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Type</th>
+                                <th>Questions</th>
+                                <th>Date de création</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for template in campaign.question_templates.all %}
+                            <tr>
+                                <td><strong>{{ template.name }}</strong></td>
+                                <td><span class="badge bg-light-info">{{ template.get_type_display }}</span></td>
+                                <td><span class="badge bg-light-primary">{{ template.questions.count }}</span></td>
+                                <td>{{ template.created_at|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    Aucun questionnaire associé à cette campagne.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Récoltes associées</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if campaign.recoltes.all %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>École</th>
+                                <th>Collecteur</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for recolte in campaign.recoltes.all %}
+                            <tr>
+                                <td>{{ recolte.date|date:"d/m/Y H:i" }}</td>
+                                <td>{{ recolte.establishment.name }}</td>
+                                <td>{{ recolte.collector_id.username }}</td>
+                                <td>
+                                    {% if recolte.status == 'valide' %}
+                                        <span class="badge bg-success">Validé</span>
+                                    {% elif recolte.status == 'rejete' %}
+                                        <span class="badge bg-danger">Rejeté</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">En attente</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    Aucune récolte associée à cette campagne.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

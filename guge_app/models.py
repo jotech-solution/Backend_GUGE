@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Province(models.Model):
     name = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -163,6 +164,25 @@ class QuestionTemplate(models.Model):
         return f"{self.name} ({self.type})"
 
 
+class Groupe(models.Model):
+    """Groupement de questions."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+
 class Question(models.Model):
 
     KIND_CHOICES = [
@@ -178,6 +198,13 @@ class Question(models.Model):
         on_delete=models.CASCADE,
         related_name="questions"
     )
+    groupe = models.ForeignKey(
+        Groupe,
+        on_delete=models.SET_NULL,
+        related_name="questions",
+        null=True,
+        blank=True
+    )
 
     text = models.TextField()
     kind = models.CharField(max_length=20, choices=KIND_CHOICES)
@@ -190,6 +217,31 @@ class Question(models.Model):
 
     def __str__(self):
         return self.text
+
+class Campaign(models.Model):
+    """Campagne de collecte de données."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    name = models.CharField(max_length=255)
+    question_templates = models.ManyToManyField(
+        QuestionTemplate,
+        related_name="campaigns"
+    )
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    comments = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    # @property
+    # def is_active(self):
+    #     now = timezone.now()
+    #     return self.start_date <= now <= self.end_date
 
 class Recolte(models.Model):
 
@@ -211,6 +263,13 @@ class Recolte(models.Model):
         "School",
         on_delete=models.CASCADE,
         related_name="recoltes"
+    )
+    campaign = models.ForeignKey(
+        Campaign,
+        on_delete=models.SET_NULL,
+        related_name="recoltes",
+        null=True,
+        blank=True
     )
 
     date = models.DateTimeField()

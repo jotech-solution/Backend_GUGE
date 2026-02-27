@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import School, Province, Division, SubDivision, City, Territory, QuestionTemplate, Question, Recolte
+from django.http import JsonResponse
+from .models import School, Province, Division, SubDivision, City, Territory, QuestionTemplate, Question, Recolte, Groupe, Campaign
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
-from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer, RecolteSerializer, UserSerializer
+from .serializers import SchoolSerializer, QuestionTemplateSerializer, SchoolSyncSerializer, RecolteSerializer, UserSerializer, CampaignSerializer
 from .filters import SchoolFilter
 from rest_framework import viewsets, permissions
 from django_filters.rest_framework import DjangoFilterBackend
@@ -110,6 +111,16 @@ class RecolteViewSet(viewsets.ModelViewSet):
     filterset_fields = ["type", "status", "establishment"]
     search_fields = ["collector_name", "establishment__name"]
     ordering_fields = ["date", "created_at"]
+
+
+class CampaignViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Campaign.objects.prefetch_related("question_templates", "recoltes").all()
+    serializer_class = CampaignSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["is_active"]
+    search_fields = ["name"]
+    ordering_fields = ["start_date", "end_date", "name", "created_at"]
 
 
 @login_required(login_url='users/login/')
@@ -423,15 +434,25 @@ def question_add_multiple(request, template_id):
         texts = request.POST.getlist('text')
         kinds = request.POST.getlist('kind')
         options_list = request.POST.getlist('options')
+        groupe_ids = request.POST.getlist('groupe')
 
-        for text, kind, opts in zip(texts, kinds, options_list):
+        for text, kind, opts, groupe_id in zip(texts, kinds, options_list, groupe_ids):
             if not text.strip():
                 continue
             options = []
             if kind == 'choice' and opts:
                 options = [opt.strip() for opt in opts.split(',') if opt.strip()]
+            
+            groupe = None
+            if groupe_id and groupe_id.strip():
+                try:
+                    groupe = Groupe.objects.get(pk=groupe_id)
+                except Groupe.DoesNotExist:
+                    groupe = None
+            
             Question.objects.create(
                 template=template,
+                groupe=groupe,
                 text=text,
                 kind=kind,
                 options=options
@@ -442,10 +463,12 @@ def question_add_multiple(request, template_id):
     kind_choices = Question.KIND_CHOICES
     questions_qs = template.questions.all()
     questions = get_paginated_queryset(request, questions_qs)
+    groupes = Groupe.objects.all()
     return render(request, 'question_bulk_add.html', {
         'template': template,
         'kind_choices': kind_choices,
-        'questions': questions
+        'questions': questions,
+        'groupes': groupes
     })
 
 @login_required(login_url='users/login/')
@@ -477,13 +500,22 @@ def question_list(request):
         text = request.POST.get('text')
         kind = request.POST.get('kind')
         options_raw = request.POST.get('options')
+        groupe_id = request.POST.get('groupe')
 
         options = []
         if options_raw:
             options = [opt.strip() for opt in options_raw.split(',') if opt.strip()]
 
+        groupe = None
+        if groupe_id and groupe_id.strip():
+            try:
+                groupe = Groupe.objects.get(pk=groupe_id)
+            except Groupe.DoesNotExist:
+                groupe = None
+
         Question.objects.create(
             template_id=template_id,
+            groupe=groupe,
             text=text,
             kind=kind,
             options=options
@@ -495,10 +527,12 @@ def question_list(request):
     questions = get_paginated_queryset(request, questions_qs)
     templates = QuestionTemplate.objects.all()
     kind_choices = Question.KIND_CHOICES
+    groupes = Groupe.objects.all()
     return render(request, 'question_list.html', {
         'questions': questions,
         'templates': templates,
-        'kind_choices': kind_choices
+        'kind_choices': kind_choices,
+        'groupes': groupes
     })
 
 @login_required(login_url='users/login/')
@@ -509,22 +543,33 @@ def question_edit(request, pk):
         question.text = request.POST.get('text')
         question.kind = request.POST.get('kind')
         options_raw = request.POST.get('options')
+        groupe_id = request.POST.get('groupe')
         
         options = []
         if options_raw:
             options = [opt.strip() for opt in options_raw.split(',') if opt.strip()]
         
+        groupe = None
+        if groupe_id and groupe_id.strip():
+            try:
+                groupe = Groupe.objects.get(pk=groupe_id)
+            except Groupe.DoesNotExist:
+                groupe = None
+        
         question.options = options
+        question.groupe = groupe
         question.save()
         messages.success(request, "Question mise à jour avec succès.")
         return redirect('question_list')
     
     templates = QuestionTemplate.objects.all()
     kind_choices = Question.KIND_CHOICES
+    groupes = Groupe.objects.all()
     return render(request, 'question_edit.html', {
         'question': question,
         'templates': templates,
-        'kind_choices': kind_choices
+        'kind_choices': kind_choices,
+        'groupes': groupes
     })
 
 @login_required(login_url='users/login/')
@@ -535,6 +580,136 @@ def question_delete(request, pk):
         messages.success(request, "Question supprimée avec succès.")
         return redirect('question_list')
     return render(request, 'question_confirm_delete.html', {'question': question})
+
+@login_required(login_url='users/login/')
+def groupe_list(request):
+    if request.method == 'POST':
+        import json
+        
+        # Gérer les requêtes JSON (AJAX) et les requêtes form-urlencoded
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body)
+                name = data.get('name')
+                description = data.get('description', '')
+                order = data.get('order', 0)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        else:
+            name = request.POST.get('name')
+            description = request.POST.get('description', '')
+            order = request.POST.get('order', 0)
+        
+        if name:
+            groupe = Groupe.objects.create(
+                name=name,
+                description=description,
+                order=int(order) if order else 0
+            )
+            
+            # Retourner JSON si c'est une requête AJAX
+            if request.content_type == 'application/json':
+                return JsonResponse({
+                    'id': str(groupe.id),
+                    'name': groupe.name,
+                    'description': groupe.description,
+                    'order': groupe.order,
+                })
+            else:
+                messages.success(request, "Groupe créé avec succès.")
+                return redirect('groupe_list')
+        else:
+            if request.content_type == 'application/json':
+                return JsonResponse({'error': 'Name is required'}, status=400)
+
+    groupes_qs = Groupe.objects.all().order_by('order')
+    groupes = get_paginated_queryset(request, groupes_qs)
+    return render(request, 'groupe_list.html', {'groupes': groupes})
+
+@login_required(login_url='users/login/')
+def groupe_edit(request, pk):
+    groupe = get_object_or_404(Groupe, pk=pk)
+    if request.method == 'POST':
+        groupe.name = request.POST.get('name')
+        groupe.description = request.POST.get('description')
+        ordre = request.POST.get('order')
+        if ordre:
+            groupe.order = int(ordre)
+        groupe.save()
+        messages.success(request, "Groupe mis à jour avec succès.")
+        return redirect('groupe_list')
+    
+    return render(request, 'groupe_edit.html', {'groupe': groupe})
+
+@login_required(login_url='users/login/')
+def groupe_delete(request, pk):
+    groupe = get_object_or_404(Groupe, pk=pk)
+    if request.method == 'POST':
+        groupe.delete()
+        messages.success(request, "Groupe supprimé avec succès.")
+        return redirect('groupe_list')
+    return render(request, 'groupe_confirm_delete.html', {'groupe': groupe})
+
+@login_required(login_url='users/login/')
+def campaign_list(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        comments = request.POST.get('comments')
+        question_template_ids = request.POST.getlist('question_templates')
+
+        campaign = Campaign.objects.create(
+            name=name,
+            start_date=start_date,
+            end_date=end_date,
+            comments=comments
+        )
+        campaign.question_templates.set(question_template_ids)
+        messages.success(request, "Campagne créée avec succès.")
+        return redirect('campaign_list')
+
+    campaigns_qs = Campaign.objects.all().order_by('-start_date')
+    campaigns = get_paginated_queryset(request, campaigns_qs)
+    templates = QuestionTemplate.objects.all()
+    return render(request, 'campaign_list.html', {
+        'campaigns': campaigns,
+        'templates': templates
+    })
+
+@login_required(login_url='users/login/')
+def campaign_detail(request, pk):
+    campaign = get_object_or_404(Campaign, pk=pk)
+    return render(request, 'campaign_detail.html', {'campaign': campaign})
+
+@login_required(login_url='users/login/')
+def campaign_edit(request, pk):
+    campaign = get_object_or_404(Campaign, pk=pk)
+    if request.method == 'POST':
+        campaign.name = request.POST.get('name')
+        campaign.start_date = request.POST.get('start_date')
+        campaign.end_date = request.POST.get('end_date')
+        campaign.comments = request.POST.get('comments')
+        question_template_ids = request.POST.getlist('question_templates')
+        campaign.save()
+        campaign.question_templates.set(question_template_ids)
+        messages.success(request, "Campagne mise à jour avec succès.")
+        return redirect('campaign_list')
+    
+    templates = QuestionTemplate.objects.all()
+    return render(request, 'campaign_edit.html', {
+        'campaign': campaign,
+        'templates': templates
+    })
+
+@login_required(login_url='users/login/')
+def campaign_delete(request, pk):
+    campaign = get_object_or_404(Campaign, pk=pk)
+    if request.method == 'POST':
+        campaign.delete()
+        messages.success(request, "Campagne supprimée avec succès.")
+        return redirect('campaign_list')
+    return render(request, 'campaign_confirm_delete.html', {'campaign': campaign})
 
 @login_required(login_url='users/login/')
 def recolte_list(request, type_recolte):
