@@ -12,6 +12,19 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from datetime import datetime
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def recoltes_mine(request):
+    """Retourne les récoltes créées par l'utilisateur connecté."""
+    recoltes_qs = Recolte.objects.filter(collector_id=request.user).order_by('-date')
+    serializer = RecolteSerializer(recoltes_qs, many=True)
+    return Response({
+        'recoltes': serializer.data
+    })
 
 # APIS
 @api_view(['POST'])
@@ -32,6 +45,18 @@ def get_current_user(request):
     """Récupère les informations de l'utilisateur connecté"""
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # ajouter les informations utilisateur sérialisées
+        data['user'] = UserSerializer(self.user).data
+        return data
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 class QuestionTemplateViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -85,6 +110,30 @@ class RecolteViewSet(viewsets.ModelViewSet):
     filterset_fields = ["type", "status", "establishment"]
     search_fields = ["collector_name", "establishment__name"]
     ordering_fields = ["date", "created_at"]
+
+
+@login_required(login_url='users/login/')
+def recolte_detail(request, pk):
+    recolte = get_object_or_404(Recolte, pk=pk)
+
+    # Préparer les paires question -> réponse
+    answers = recolte.answers or {}
+    qa_list = []
+    for qid, answer in answers.items():
+        try:
+            q = Question.objects.get(pk=qid)
+            q_text = q.text
+        except Exception:
+            q_text = str(qid)
+        qa_list.append({
+            'question': q_text,
+            'answer': answer
+        })
+
+    return render(request, 'recolte_detail.html', {
+        'recolte': recolte,
+        'qa_list': qa_list
+    })
 
 # Create your views here.
 @login_required(login_url='users/login/')

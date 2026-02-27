@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détails - Fiche de Récolte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-block">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Détails de la fiche de récolte</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'recolte_list' recolte.type %}">Fiches de Récolte</a></li>
+          <li class="breadcrumb-item">Détails</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5>Informations générales</h5>
+      </div>
+      <div class="card-body">
+        <p><strong>Date :</strong> {{ recolte.date|date:"d/m/Y H:i" }}</p>
+        <p><strong>École :</strong> {{ recolte.establishment.name }}</p>
+        <p><strong>Collecteur :</strong> {{ recolte.collector_name }}</p>
+        <p><strong>Type :</strong> {{ recolte.get_type_display }}</p>
+        <p><strong>Statut :</strong>
+            {% if recolte.status == 'valide' %}
+                <span class="badge bg-success">Validé</span>
+            {% elif recolte.status == 'rejete' %}
+                <span class="badge bg-danger">Rejeté</span>
+            {% else %}
+                <span class="badge bg-warning">En attente</span>
+            {% endif %}
+        </p>
+        {% if recolte.notes %}
+        <p><strong>Notes :</strong><br/>{{ recolte.notes }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5>École - localisation</h5>
+      </div>
+      <div class="card-body">
+        <p><strong>Province :</strong> {{ recolte.establishment.province.name }}</p>
+        <p><strong>Division :</strong> {{ recolte.establishment.division.name }}</p>
+        <p><strong>Ville :</strong> {{ recolte.establishment.city.name if recolte.establishment.city }}</p>
+        <p><strong>Territoire :</strong> {{ recolte.establishment.territory.name if recolte.establishment.territory }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5>Questions et réponses</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Réponse</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in qa_list %}
+              <tr>
+                <td>{{ item.question }}</td>
+                <td>
+                  {% if item.answer is iterable and not item.answer|string %}
+                    <pre>{{ item.answer|json_script:"ans" }}</pre>
+                  {% else %}
+                    {{ item.answer }}
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="2">Aucune réponse enregistrée.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

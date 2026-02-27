@@ -72,9 +72,9 @@
                             <i class="ti ti-x"></i>
                         </a>
                     {% endif %}
-                    <button type="button" class="btn btn-light" title="Voir détails">
-                        <i class="ti ti-eye"></i>
-                    </button>
+                    <a href="{% url 'recolte_detail' recolte.pk %}" class="btn btn-light" title="Voir détails">
+                      <i class="ti ti-eye"></i>
+                    </a>
                   </div>
                 </td>
               </tr>

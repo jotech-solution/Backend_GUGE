@@ -22,7 +22,6 @@ from guge_app.views import home
 from django.conf.urls.static import static
 from guge_app import views
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
 )
 
@@ -56,10 +55,11 @@ urlpatterns = [
     path('api/schools/', views.SchoolViewSet.as_view({'get': 'list', 'post': 'create'}), name='school_api_list'),
     path('api/schools-sync/', views.SchoolSyncViewSet.as_view({'get': 'list'}), name='school_sync_api_list'),
     path('api/recoltes/', views.RecolteViewSet.as_view({'get': 'list', 'post': 'create'}), name='recolte_api_list'),
+    path('api/recoltes/mine/', views.recoltes_mine, name='recoltes_mine'),
     path('api/recoltes/<uuid:pk>/', views.RecolteViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}), name='recolte_api_detail'),
     path('api/question-templates/', views.QuestionTemplateViewSet.as_view({'get': 'list'}), name='question_template_api_list'),
     # TOKENS
-    path("api/token/", TokenObtainPairView.as_view()),
+    path("api/token/", views.MyTokenObtainPairView.as_view()),
     path("api/token/refresh/", TokenRefreshView.as_view()),
     # DOCUMENTATION
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0)),

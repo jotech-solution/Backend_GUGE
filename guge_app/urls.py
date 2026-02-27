@@ -25,6 +25,7 @@ urlpatterns = [
     path('questions/<uuid:pk>/edit/', views.question_edit, name='question_edit'),
     path('questions/<uuid:pk>/delete/', views.question_delete, name='question_delete'),
     path('recoltes/<str:type_recolte>/', views.recolte_list, name='recolte_list'),
+    path('recoltes/<uuid:pk>/view/', views.recolte_detail, name='recolte_detail'),
     path('recoltes/validate/<uuid:pk>/', views.recolte_validate, name='recolte_validate'),
     path('recoltes/reject/<uuid:pk>/', views.recolte_reject, name='recolte_reject'),
 
