@@ -118,7 +118,6 @@ class CampaignViewSet(viewsets.ModelViewSet):
     queryset = Campaign.objects.prefetch_related("question_templates", "recoltes").all()
     serializer_class = CampaignSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["is_active"]
     search_fields = ["name"]
     ordering_fields = ["start_date", "end_date", "name", "created_at"]
 
