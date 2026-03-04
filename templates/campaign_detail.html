@@ -57,10 +57,10 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5>Questionnaires de la Campagne</h5>
+                <h5>Questionnaire de la Campagne</h5>
             </div>
             <div class="card-body p-0">
-                {% if campaign.question_templates.all %}
+                {% if campaign.question_templates %}
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead>
@@ -72,14 +72,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for template in campaign.question_templates.all %}
                             <tr>
-                                <td><strong>{{ template.name }}</strong></td>
-                                <td><span class="badge bg-light-info">{{ template.get_type_display }}</span></td>
-                                <td><span class="badge bg-light-primary">{{ template.questions.count }}</span></td>
-                                <td>{{ template.created_at|date:"d/m/Y" }}</td>
+                                <td><strong>{{ campaign.question_templates.name }}</strong></td>
+                                <td><span class="badge bg-light-info">{{ campaign.question_templates.get_type_display }}</span></td>
+                                <td><span class="badge bg-light-primary">{{ campaign.question_templates.questions.count }}</span></td>
+                                <td>{{ campaign.question_templates.created_at|date:"d/m/Y" }}</td>
                             </tr>
-                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

@@ -43,17 +43,13 @@
                         <input type="datetime-local" name="end_date" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">Questionnaires (optionnel)</label>
-                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #e9ecef; padding: 10px; border-radius: 4px;">
+                        <label class="form-label">Questionnaire (optionnel)</label>
+                        <select name="question_template" class="form-select">
+                            <option value="">Aucun</option>
                             {% for template in templates %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="question_templates" value="{{ template.id }}" id="template_{{ template.id }}">
-                                <label class="form-check-label" for="template_{{ template.id }}">
-                                    {{ template.name }} ({{ template.get_type_display }})
-                                </label>
-                            </div>
+                            <option value="{{ template.id }}">{{ template.name }} ({{ template.get_type_display }})</option>
                             {% endfor %}
-                        </div>
+                        </select>
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label">Commentaires (optionnel)</label>
@@ -98,7 +94,11 @@
                                 <td>{{ campaign.start_date|date:"d/m/Y H:i" }}</td>
                                 <td>{{ campaign.end_date|date:"d/m/Y H:i" }}</td>
                                 <td>
-                                    <span class="badge bg-light-info text-info">{{ campaign.question_templates.count }}</span>
+                                    {% if campaign.question_templates %}
+                                        {{ campaign.question_templates.name }}
+                                    {% else %}
+                                        <em>Aucun</em>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <a href="{% url 'campaign_detail' campaign.pk %}" class="avtar avtar-xs btn-link-secondary" title="Voir"><i class="ti ti-eye"></i></a>

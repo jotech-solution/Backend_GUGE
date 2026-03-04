@@ -224,9 +224,13 @@ class Campaign(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     name = models.CharField(max_length=255)
-    question_templates = models.ManyToManyField(
+    # previously many-to-many; now only one template per campaign
+    question_templates = models.ForeignKey(
         QuestionTemplate,
-        related_name="campaigns"
+        on_delete=models.SET_NULL,
+        related_name="campaigns",
+        null=True,
+        blank=True
     )
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

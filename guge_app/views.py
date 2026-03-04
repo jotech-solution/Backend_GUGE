@@ -115,7 +115,7 @@ class RecolteViewSet(viewsets.ModelViewSet):
 
 class CampaignViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Campaign.objects.prefetch_related("question_templates", "recoltes").all()
+    queryset = Campaign.objects.select_related("question_templates").prefetch_related("recoltes").all()
     serializer_class = CampaignSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["name"]
@@ -649,6 +649,49 @@ def groupe_delete(request, pk):
         return redirect('groupe_list')
     return render(request, 'groupe_confirm_delete.html', {'groupe': groupe})
 
+
+@login_required(login_url='users/login/')
+def rapport_list(request):
+    """Liste des rapports (fiches de récolte validées)."""
+    qs = Recolte.objects.filter(status='valide').order_by('-date')
+    rapports = get_paginated_queryset(request, qs)
+    return render(request, 'rapport_list.html', {'recoltes': rapports, 'title': 'Rapports'})
+
+
+@login_required(login_url='users/login/')
+def rapport_detail(request, pk):
+    """Affiche la fiche de récolte formatée via model.html."""
+    recolte = get_object_or_404(Recolte, pk=pk, status='valide')
+    rapport = recolte.answers or {}
+
+    # extra lists that model.html iterates over
+    themes = rapport.get('themes', [])
+    effectifs = rapport.get('effectifs', [])
+
+    # build question groups from answers and Question model
+    groups_dict = {}
+    for qid, ans in (rapport.get('answers', {}) or rapport).items():
+        # some reports may nest answers under 'answers' key or top-level
+        try:
+            q = Question.objects.get(pk=qid)
+        except Exception:
+            continue
+        grp = q.groupe  # may be None
+        key = grp.id if grp else 'nogroup'
+        if key not in groups_dict:
+            groups_dict[key] = {'group': grp, 'qa': []}
+        groups_dict[key]['qa'].append({'question': q.text, 'answer': ans})
+    # convert to list preserving order (group.order or None at end)
+    groups_list = sorted(groups_dict.values(), key=lambda x: (x['group'].order if x['group'] else 9999))
+    print(groups_list)
+    return render(request, 'model.html', {
+        'rapport': rapport,
+        'recolte': recolte,
+        'themes': themes,
+        'effectifs': effectifs,
+        'groups_list': groups_list,
+    })
+
 @login_required(login_url='users/login/')
 def campaign_list(request):
     if request.method == 'POST':
@@ -656,15 +699,15 @@ def campaign_list(request):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         comments = request.POST.get('comments')
-        question_template_ids = request.POST.getlist('question_templates')
+        template_id = request.POST.get('question_template')
 
         campaign = Campaign.objects.create(
             name=name,
             start_date=start_date,
             end_date=end_date,
-            comments=comments
+            comments=comments,
+            question_templates_id=template_id if template_id else None,
         )
-        campaign.question_templates.set(question_template_ids)
         messages.success(request, "Campagne créée avec succès.")
         return redirect('campaign_list')
 
@@ -689,9 +732,9 @@ def campaign_edit(request, pk):
         campaign.start_date = request.POST.get('start_date')
         campaign.end_date = request.POST.get('end_date')
         campaign.comments = request.POST.get('comments')
-        question_template_ids = request.POST.getlist('question_templates')
+        template_id = request.POST.get('question_template')
+        campaign.question_templates_id = template_id if template_id else None
         campaign.save()
-        campaign.question_templates.set(question_template_ids)
         messages.success(request, "Campagne mise à jour avec succès.")
         return redirect('campaign_list')
     
