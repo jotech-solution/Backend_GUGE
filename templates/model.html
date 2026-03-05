@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -38,6 +39,10 @@ body{ background:#f4f6f9; }
     <p>Année scolaire : 2022-2023</p>
 </div>
 
+<div class="text-center mb-3">
+    <button id="print-btn" class="btn btn-primary">Imprimer</button>
+</div>
+
 <div class="accordion" id="rapportAccordion">
 
 <!-- ================= IDENTIFICATION ================= -->
@@ -68,9 +73,9 @@ body{ background:#f4f6f9; }
 <hr>
 
 <p><strong>Coordonnées :</strong>
-Lat {{ recolte.establishment.geo_coord.lat }} |
-Long {{ recolte.establishment.geo_coord.long }} |
-Alt {{ recolte.establishment.altitude }}
+Lat {{ recolte.establishment.geo_coord.latitude }} |
+Long {{ recolte.establishment.geo_coord.longitude }} |
+Alt 0
 </p>
 
 </div>
@@ -90,11 +95,15 @@ Alt {{ recolte.establishment.altitude }}
     <div class="accordion-body">
         {% for question in questions %}
             {% if question.groupe.name == grp.name %}
-                <ul>
-                <li>
-                     <p><strong>{{ question }} :</strong> {{ recolte.establishment.territory }}</p>
-                </li>
-                </ul>
+                {% with answer="" %}
+                {% for item in answers_list %}
+                    {% if item.question_uuid == question.id %}
+                        {% with answer=item.answer %}
+                        {% endwith %}
+                        {% endif %}
+                    {% endfor %}
+                <p><strong>{{ question.text }} :</strong> {{ answer|default:"Non répondu" }}</p>
+                {% endwith %}
             {% endif %}
         {% endfor %}
     </div>
@@ -102,146 +111,6 @@ Alt {{ recolte.establishment.altitude }}
     </div>
     {% endfor %}
 {% endif %}
-
-{#<!-- ================= TABLEAU 1 ================= -->#}
-{#<div class="accordion-item">#}
-{#<h2 class="accordion-header">#}
-{#<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#effectifs">#}
-{#Tableau 1 : Effectifs des Élèves#}
-{#</button>#}
-{#</h2>#}
-{#<div id="effectifs" class="accordion-collapse collapse">#}
-{#<div class="accordion-body">#}
-{##}
-{#<table class="table table-bordered table-striped table-sm">#}
-{#<thead>#}
-{#<tr>#}
-{#<th>Année</th>#}
-{#<th>Garçons</th>#}
-{#<th>Filles</th>#}
-{#<th>Total</th>#}
-{#</tr>#}
-{#</thead>#}
-{#<tbody>#}
-{#{% for classe in effectifs %}#}
-{#<tr>#}
-{#<td>{{ classe.nom }}</td>#}
-{#<td>{{ classe.garcons }}</td>#}
-{#<td>{{ classe.filles }}</td>#}
-{#<td>{{ classe.total }}</td>#}
-{#</tr>#}
-{#{% endfor %}#}
-{#</tbody>#}
-{#</table>#}
-{##}
-{#</div>#}
-{#</div>#}
-{#</div>#}
-{##}
-{#<!-- ================= TABLEAU 7 PERSONNEL ================= -->#}
-{#<div class="accordion-item">#}
-{#<h2 class="accordion-header">#}
-{#<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#personnel">#}
-{#Tableau 7 : Personnel Enseignant#}
-{#</button>#}
-{#</h2>#}
-{#<div id="personnel" class="accordion-collapse collapse">#}
-{#<div class="accordion-body">#}
-{##}
-{#<table class="table table-bordered table-hover table-sm">#}
-{#<thead>#}
-{#<tr>#}
-{#<th>Nom</th>#}
-{#<th>Sexe</th>#}
-{#<th>Qualification</th>#}
-{#<th>Situation</th>#}
-{#</tr>#}
-{#</thead>#}
-{#<tbody>#}
-{#{% for enseignant in enseignants %}#}
-{#<tr>#}
-{#<td>{{ enseignant.nom }}</td>#}
-{#<td>{{ enseignant.sexe }}</td>#}
-{#<td>{{ enseignant.qualification }}</td>#}
-{#<td>{{ enseignant.situation }}</td>#}
-{#</tr>#}
-{#{% endfor %}#}
-{#</tbody>#}
-{#</table>#}
-{##}
-{#</div>#}
-{#</div>#}
-{#</div>#}
-{##}
-{#<!-- ================= INFRASTRUCTURES ================= -->#}
-{#<div class="accordion-item">#}
-{#<h2 class="accordion-header">#}
-{#<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#infra">#}
-{#Tableaux 12a & 12b : Infrastructures#}
-{#</button>#}
-{#</h2>#}
-{#<div id="infra" class="accordion-collapse collapse">#}
-{#<div class="accordion-body">#}
-{##}
-{#<table class="table table-bordered table-sm">#}
-{#<thead>#}
-{#<tr>#}
-{#<th>Type</th>#}
-{#<th>Total</th>#}
-{#<th>Bon état</th>#}
-{#<th>Mauvais état</th>#}
-{#</tr>#}
-{#</thead>#}
-{#<tbody>#}
-{#{% for local in locaux %}#}
-{#<tr>#}
-{#<td>{{ local.type }}</td>#}
-{#<td>{{ local.total }}</td>#}
-{#<td>{{ local.bon }}</td>#}
-{#<td>{{ local.mauvais }}</td>#}
-{#</tr>#}
-{#{% endfor %}#}
-{#</tbody>#}
-{#</table>#}
-{##}
-{#</div>#}
-{#</div>#}
-{#</div>#}
-{##}
-{#<!-- ================= RESULTATS EXETAT ================= -->#}
-{#<div class="accordion-item">#}
-{#<h2 class="accordion-header">#}
-{#<button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#exetat">#}
-{#Tableau 4 : Résultats Exetat#}
-{#</button>#}
-{#</h2>#}
-{#<div id="exetat" class="accordion-collapse collapse">#}
-{#<div class="accordion-body">#}
-{##}
-{#<table class="table table-bordered table-sm">#}
-{#<thead>#}
-{#<tr>#}
-{#<th>Filière</th>#}
-{#<th>Inscrits</th>#}
-{#<th>Présents</th>#}
-{#<th>Admis</th>#}
-{#</tr>#}
-{#</thead>#}
-{#<tbody>#}
-{#{% for res in exetat %}#}
-{#<tr>#}
-{#<td>{{ res.filiere }}</td>#}
-{#<td>{{ res.inscrits }}</td>#}
-{#<td>{{ res.presents }}</td>#}
-{#<td>{{ res.admis }}</td>#}
-{#</tr>#}
-{#{% endfor %}#}
-{#</tbody>#}
-{#</table>#}
-{##}
-{#</div>#}
-{#</div>#}
-{#</div>#}
 
 </div>
 

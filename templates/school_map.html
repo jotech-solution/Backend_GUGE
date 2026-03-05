@@ -55,8 +55,8 @@
         var markers = [];
 
         {% for school in schools %}
-        {% if school.geo_coord.lat and school.geo_coord.long %}
-        var marker = L.marker([{{ school.geo_coord.lat }}, {{ school.geo_coord.long }}])
+        {% if school.geo_coord.latitude and school.geo_coord.longitude %}
+        var marker = L.marker([{{ school.geo_coord.latitude }}, {{ school.geo_coord.longitude }}])
             .addTo(map)
             .bindPopup("<b>{{ school.name }}</b><br>{{ school.address }}<br><a href='{% url 'school_detail' school.pk %}'>Voir détails</a>");
         markers.push(marker);

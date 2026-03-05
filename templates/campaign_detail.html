@@ -72,12 +72,14 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for template in campaign.question_templates.all %}
                             <tr>
-                                <td><strong>{{ campaign.question_templates.name }}</strong></td>
-                                <td><span class="badge bg-light-info">{{ campaign.question_templates.get_type_display }}</span></td>
-                                <td><span class="badge bg-light-primary">{{ campaign.question_templates.questions.count }}</span></td>
-                                <td>{{ campaign.question_templates.created_at|date:"d/m/Y" }}</td>
+                                <td><strong>{{ template.name }}</strong></td>
+                                <td><span class="badge bg-light-info">{{ template.get_type_display }}</span></td>
+                                <td><span class="badge bg-light-primary">{{ template.questions.count }}</span></td>
+                                <td>{{ template.created_at|date:"d/m/Y" }}</td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

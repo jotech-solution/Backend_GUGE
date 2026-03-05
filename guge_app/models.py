@@ -225,11 +225,9 @@ class Campaign(models.Model):
 
     name = models.CharField(max_length=255)
     # previously many-to-many; now only one template per campaign
-    question_templates = models.ForeignKey(
+    question_templates = models.ManyToManyField(
         QuestionTemplate,
-        on_delete=models.SET_NULL,
         related_name="campaigns",
-        null=True,
         blank=True
     )
     start_date = models.DateTimeField()
@@ -284,7 +282,7 @@ class Recolte(models.Model):
     type = models.CharField(max_length=50, choices=TYPE_CHOICES)
 
     # questionId -> answer
-    answers = models.JSONField(default=dict, blank=True)
+    answers = models.JSONField(default=list, blank=True, null=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='en_attente')
 

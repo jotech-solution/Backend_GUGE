@@ -72,13 +72,13 @@ class QuestionTemplateSerializer(serializers.ModelSerializer):
 
 class CampaignSerializer(serializers.ModelSerializer):
     # read nested
-    question_templates = QuestionTemplateSerializer(read_only=True)
+    question_templates = QuestionTemplateSerializer(many=True, read_only=True)
     # allow writing by PK
-    question_template_id = serializers.PrimaryKeyRelatedField(
+    question_template_ids = serializers.PrimaryKeyRelatedField(
         source='question_templates',
         queryset=QuestionTemplate.objects.all(),
+        many=True,
         write_only=True,
-        allow_null=True,
         required=False,
     )
     recolte_count = serializers.SerializerMethodField()
@@ -92,7 +92,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             "end_date",
             "comments",
             "question_templates",
-            "question_template_id",
+            "question_template_ids",
             "recolte_count",
             "created_at",
             "updated_at",

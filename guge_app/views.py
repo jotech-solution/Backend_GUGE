@@ -115,7 +115,7 @@ class RecolteViewSet(viewsets.ModelViewSet):
 
 class CampaignViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Campaign.objects.select_related("question_templates").prefetch_related("recoltes").all()
+    queryset = Campaign.objects.prefetch_related("question_templates", "recoltes").all()
     serializer_class = CampaignSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     search_fields = ["name"]
@@ -127,18 +127,24 @@ def recolte_detail(request, pk):
     recolte = get_object_or_404(Recolte, pk=pk)
 
     # Préparer les paires question -> réponse
-    answers = recolte.answers or {}
+    answers = recolte.answers or []
     qa_list = []
-    for qid, answer in answers.items():
-        try:
-            q = Question.objects.get(pk=qid)
-            q_text = q.text
-        except Exception:
-            q_text = str(qid)
-        qa_list.append({
-            'question': q_text,
-            'answer': answer
-        })
+
+    # Les réponses sont stockées comme une liste de dictionnaires
+    if isinstance(answers, list):
+        for item in answers:
+            if isinstance(item, dict):
+                qid = item.get('question_uuid', '')
+                answer = item.get('answer', '')
+                try:
+                    q = Question.objects.get(pk=qid)
+                    q_text = q.text
+                except Exception:
+                    q_text = f"Question {qid}"
+                qa_list.append({
+                    'question': q_text,
+                    'answer': answer
+                })
 
     return render(request, 'recolte_detail.html', {
         'recolte': recolte,
@@ -170,7 +176,6 @@ def get_paginated_queryset(request, queryset, count=10):
 @login_required(login_url='users/login/')
 def school_map(request):
     schools = School.objects.filter(geo_coord__isnull=False)
-    print(schools)
     return render(request, 'school_map.html', {'schools': schools})
 
 @login_required(login_url='users/login/')
@@ -212,7 +217,7 @@ def school_edit(request, pk):
         lat = request.POST.get('latitude')
         lon = request.POST.get('longitude')
         if lat and lon:
-            school.geo_coord = {"lat": float(lat), "long": float(lon)}
+            school.geo_coord = {"latitude": float(lat), "longitude": float(lon)}
         else:
             school.geo_coord = None
 
@@ -288,7 +293,7 @@ def school_form(request):
         School.objects.create(
             name=name, address=address, level=level, head_name=head_name, head_phone=head_phone,
             province_id=province_id, city_id=city_id, territory_id=territory_id,
-            division_id=division_id, sub_division_id=sub_division_id,
+            division_id=division_id, sub_division_id=sub_div_division_id,
             village=village, adm_code=adm_code, legal_reference=legal_reference,
             secope_number=secope_number, management_regime=management_regime,
             mechanized_status=mechanized_status, ownership_status=ownership_status,
@@ -663,16 +668,20 @@ def rapport_list(request):
 def rapport_detail(request, pk):
     """Affiche la fiche de récolte formatée via model.html."""
     recolte = get_object_or_404(Recolte, pk=pk, status='valide')
-    rapport = recolte.answers or {}
+    rapport = recolte.answers or []
+    answer_dict = {item.get('question_uuid', item.get('question', '')): item.get('answer', '') for item in rapport if isinstance(item, dict)}
 
     # extra lists that model.html iterates over
-    themes = rapport.get('themes', [])
-    effectifs = rapport.get('effectifs', [])
+    themes = []
+    effectifs = []
 
     # build question groups from answers and Question model
     groups_dict = {}
-    for qid, ans in (rapport.get('answers', {}) or rapport).items():
-        # some reports may nest answers under 'answers' key or top-level
+    for item in rapport:
+        if not isinstance(item, dict):
+            continue
+        qid = item.get('question_uuid', item.get('question', ''))
+        ans = item.get('answer', '')
         try:
             q = Question.objects.get(pk=qid)
         except Exception:
@@ -683,19 +692,18 @@ def rapport_detail(request, pk):
             groups_dict[key] = {'group': grp, 'qa': []}
         groups_dict[key]['qa'].append({'question': q.text, 'answer': ans})
     # convert to list preserving order (group.order or None at end)
-    groups_list = Groupe.objects.all()
-    print(groups_list)
-    qst = recolte.campaign.question_templates
-    print(qst.questions)
-    questions = Question.objects.filter(template=qst)
-    print(questions)
+    questions = Question.objects.filter(template__in=recolte.campaign.question_templates.all())
+    groups_with_questions = set(q.groupe for q in questions if q.groupe)
+    groups_list = sorted([grp for grp in groups_with_questions], key=lambda g: g.order)
+
     return render(request, 'model.html', {
         'rapport': rapport,
         'recolte': recolte,
         'themes': themes,
         'effectifs': effectifs,
         'groups_list': groups_list,
-        'questions': questions
+        'questions': questions,
+        'answers_list': rapport
 
     })
 
@@ -706,15 +714,18 @@ def campaign_list(request):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         comments = request.POST.get('comments')
-        template_id = request.POST.get('question_template')
+        template_ids = request.POST.getlist('question_template')
 
-        campaign = Campaign.objects.create(
+        campaign = Campaign(
             name=name,
             start_date=start_date,
             end_date=end_date,
             comments=comments,
-            question_templates_id=template_id if template_id else None,
         )
+        campaign.save()
+        campaign.question_templates.set(template_ids)
+        campaign.save()
+
         messages.success(request, "Campagne créée avec succès.")
         return redirect('campaign_list')
 
@@ -739,8 +750,8 @@ def campaign_edit(request, pk):
         campaign.start_date = request.POST.get('start_date')
         campaign.end_date = request.POST.get('end_date')
         campaign.comments = request.POST.get('comments')
-        template_id = request.POST.get('question_template')
-        campaign.question_templates_id = template_id if template_id else None
+        template_ids = request.POST.getlist('question_template')
+        campaign.question_templates.set(template_ids)
         campaign.save()
         messages.success(request, "Campagne mise à jour avec succès.")
         return redirect('campaign_list')
@@ -759,6 +770,85 @@ def campaign_delete(request, pk):
         messages.success(request, "Campagne supprimée avec succès.")
         return redirect('campaign_list')
     return render(request, 'campaign_confirm_delete.html', {'campaign': campaign})
+
+@login_required(login_url='users/login/')
+def recolte_answer(request, pk):
+    """Vue pour répondre aux questions d'une récolte."""
+    recolte = get_object_or_404(Recolte, pk=pk)
+
+    # Récupérer les questions de la campagne, groupées par groupe
+    questions = Question.objects.filter(
+        template__in=recolte.campaign.question_templates.all()
+    ).select_related('groupe').order_by('groupe__order', 'id')
+
+    # Grouper les questions par groupe
+    from itertools import groupby
+    groups_with_questions = []
+
+    # Obtenir les groupes avec leurs questions
+    groups_dict = {}
+    for q in questions:
+        groupe_id = q.groupe.id if q.groupe else 'no_group'
+        if groupe_id not in groups_dict:
+            groups_dict[groupe_id] = {
+                'name': q.groupe.name if q.groupe else 'Autres questions',
+                'questions': []
+            }
+        groups_dict[groupe_id]['questions'].append(q)
+
+    groups_with_questions = list(groups_dict.values())
+
+    # Créer un dictionnaire des réponses existantes
+    rapport = recolte.answers or []
+    answer_dict = {
+        item.get('question_uuid', ''): item.get('answer', '')
+        for item in rapport
+        if isinstance(item, dict)
+    }
+
+    if request.method == 'POST':
+        # Récupérer toutes les réponses du formulaire
+        answers = []
+
+        for question in questions:
+            question_id = str(question.id)
+            field_name = f'answer_{question_id}'
+
+            # Récupérer la réponse
+            if question.kind == 'multiple_choice':
+                # Les checkboxes peuvent avoir plusieurs valeurs
+                values = request.POST.getlist(field_name)
+                answer = values if values else []
+            else:
+                # Les autres types de questions ont une seule réponse
+                answer = request.POST.get(field_name, '')
+
+            answers.append({
+                'question_uuid': question_id,
+                'answer': answer
+            })
+
+        # Debug: afficher les réponses
+        print(f"Réponses à sauvegarder: {answers}")
+
+        # Sauvegarder les réponses
+        recolte.answers = answers
+        recolte.save()
+
+        # Debug: vérifier la sauvegarde
+        print(f"Réponses sauvegardées: {recolte.answers}")
+
+        messages.success(request, "Réponses enregistrées avec succès.")
+        return redirect('recolte_list', type_recolte=recolte.type)
+
+    return render(request, 'recolte_answer.html', {
+        'recolte': recolte,
+        'groups_with_questions': groups_with_questions,
+        'questions': questions,
+        'answers_list': rapport,
+        'answers_dict': answer_dict
+    })
+
 
 @login_required(login_url='users/login/')
 def recolte_list(request, type_recolte):

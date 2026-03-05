@@ -47,7 +47,7 @@
               <tr>
                 <td>{{ recolte.date|date:"d/m/Y" }}</td>
                 <td>{{ recolte.establishment.name }}</td>
-                <td>{{ recolte.collector_id.last_name }} {{ recolte.collector_id.first_name }}</td>
+                <td>{{ recolte.collector_id.first_name }} {{ recolte.collector_id.last_name }} ({{ recolte.collector_id.username }})</td>
                 <td>
                     <small>{{ recolte.establishment.province.name }}</small><br>
                     <small class="text-muted">{{ recolte.establishment.division.name }}</small>

@@ -53,10 +53,10 @@ class GroupeAdmin(admin.ModelAdmin):
 
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
-    list_display = ('name', 'question_templates', 'start_date', 'end_date')
+    list_display = ('name', 'start_date', 'end_date')
     search_fields = ('name',)
     list_filter = ('start_date', 'end_date')
-    raw_id_fields = ('question_templates',)
+    filter_horizontal = ('question_templates',)
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):

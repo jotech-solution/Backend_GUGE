@@ -43,11 +43,10 @@
                         <input type="datetime-local" name="end_date" class="form-control" value="{{ campaign.end_date|date:'Y-m-dTH:i' }}" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">Questionnaire</label>
-                        <select name="question_template" class="form-select">
-                            <option value="">Aucun</option>
+                        <label class="form-label">Questionnaires</label>
+                        <select name="question_template" class="form-select" multiple>
                             {% for template in templates %}
-                            <option value="{{ template.id }}" {% if campaign.question_templates and campaign.question_templates.id == template.id %}selected{% endif %}>
+                            <option value="{{ template.id }}" {% if template in campaign.question_templates.all %}selected{% endif %}>
                                 {{ template.name }} ({{ template.get_type_display }})
                             </option>
                             {% endfor %}

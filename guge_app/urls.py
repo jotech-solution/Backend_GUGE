@@ -34,6 +34,7 @@ urlpatterns = [
     path('rapports/', views.rapport_list, name='rapport_list'),
     path('rapports/<uuid:pk>/', views.rapport_detail, name='rapport_detail'),
     path('recoltes/<str:type_recolte>/', views.recolte_list, name='recolte_list'),
+    path('recoltes/<uuid:pk>/answer/', views.recolte_answer, name='recolte_answer'),
     path('recoltes/<uuid:pk>/view/', views.recolte_detail, name='recolte_detail'),
     path('recoltes/validate/<uuid:pk>/', views.recolte_validate, name='recolte_validate'),
     path('recoltes/reject/<uuid:pk>/', views.recolte_reject, name='recolte_reject'),
