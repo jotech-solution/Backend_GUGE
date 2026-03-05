@@ -170,6 +170,7 @@ def get_paginated_queryset(request, queryset, count=10):
 @login_required(login_url='users/login/')
 def school_map(request):
     schools = School.objects.filter(geo_coord__isnull=False)
+    print(schools)
     return render(request, 'school_map.html', {'schools': schools})
 
 @login_required(login_url='users/login/')
@@ -682,14 +683,20 @@ def rapport_detail(request, pk):
             groups_dict[key] = {'group': grp, 'qa': []}
         groups_dict[key]['qa'].append({'question': q.text, 'answer': ans})
     # convert to list preserving order (group.order or None at end)
-    groups_list = sorted(groups_dict.values(), key=lambda x: (x['group'].order if x['group'] else 9999))
+    groups_list = Groupe.objects.all()
     print(groups_list)
+    qst = recolte.campaign.question_templates
+    print(qst.questions)
+    questions = Question.objects.filter(template=qst)
+    print(questions)
     return render(request, 'model.html', {
         'rapport': rapport,
         'recolte': recolte,
         'themes': themes,
         'effectifs': effectifs,
         'groups_list': groups_list,
+        'questions': questions
+
     })
 
 @login_required(login_url='users/login/')

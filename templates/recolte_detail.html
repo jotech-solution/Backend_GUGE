@@ -56,8 +56,12 @@
       <div class="card-body">
         <p><strong>Province :</strong> {{ recolte.establishment.province.name }}</p>
         <p><strong>Division :</strong> {{ recolte.establishment.division.name }}</p>
-        <p><strong>Ville :</strong> {{ recolte.establishment.city.name if recolte.establishment.city }}</p>
-        <p><strong>Territoire :</strong> {{ recolte.establishment.territory.name if recolte.establishment.territory }}</p>
+          {% if recolte.establishment.city %}
+        <p><strong>Ville :</strong> {{ recolte.establishment.city.name }}</p>
+          {% endif %}
+        {% if recolte.establishment.territory %}
+        <p><strong>Territoire :</strong> {{ recolte.establishment.territory.name}}</p>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -83,7 +87,7 @@
               <tr>
                 <td>{{ item.question }}</td>
                 <td>
-                  {% if item.answer is iterable and not item.answer|string %}
+                  {% if item.answer is iterable and not item.answer %}
                     <pre>{{ item.answer|json_script:"ans" }}</pre>
                   {% else %}
                     {{ item.answer }}

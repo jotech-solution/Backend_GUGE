@@ -51,7 +51,7 @@
       <div class="m-header">
         <a href="/" class="b-brand text-primary">
           <!-- ========   Change your logo from here   ============ -->
-          <img src="{% static 'images/logo-dark.svg' %}" class="img-fluid logo-lg" alt="logo">
+          <img src="{% static 'images/logo.png' %}" class="img-fluid p-1" alt="logo">
         </a>
       </div>
       <div class="navbar-content">
@@ -87,13 +87,13 @@
           </li>
           <li class="pc-item">
             <a href="{% url 'groupe_list' %}" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-layout-group"></i></span>
+              <span class="pc-micon"><i class="ti ti-files"></i></span>
               <span class="pc-mtext">Groupes de Questions</span>
             </a>
           </li>
-          <li class="pc-item">
+           <li class="pc-item">
             <a href="{% url 'campaign_list' %}" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-timeline"></i></span>
+              <span class="pc-micon"><i class="ti ti-speakerphone"></i></span>
               <span class="pc-mtext">Campagnes</span>
             </a>
           </li>
@@ -116,13 +116,6 @@
               <span class="pc-micon"><i class="ti ti-chart-infographic"></i></span>
               <span class="pc-mtext">Statistiques</span>
             </a>
-          </li>
-            <li class="pc-item">
-            <a href="#!" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-file-invoice"></i></span>
-              <span class="pc-mtext">Rapport</span>
-            </a>
-          </li>
 
           <li class="pc-item pc-caption">
             <label>Utilisateurs</label>

@@ -55,13 +55,12 @@
         var markers = [];
 
         {% for school in schools %}
-            {% if school.geo_coord.lat and school.geo_coord.long %}
-                var marker = L.marker([{{ school.latitude }}, {{ school.longitude }}])
-                    .addTo(map)
-                    .bindPopup("<b>{{ school.name }}</b><br>{{ school.address }}<br><a href='{% url 'school_detail' school.pk %}'>Voir détails</a>");
-                markers.push(marker);
-            {% endif %}
-            console.log({{ school.latitude }})
+        {% if school.geo_coord.lat and school.geo_coord.long %}
+        var marker = L.marker([{{ school.geo_coord.lat }}, {{ school.geo_coord.long }}])
+            .addTo(map)
+            .bindPopup("<b>{{ school.name }}</b><br>{{ school.address }}<br><a href='{% url 'school_detail' school.pk %}'>Voir détails</a>");
+        markers.push(marker);
+        {% endif %}
         {% endfor %}
 
         if (markers.length > 0) {
